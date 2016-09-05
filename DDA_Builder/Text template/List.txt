@@ -1,0 +1,39 @@
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="input-group" id="adv-search">
+            <input id="txtKeyword" ng-model="searchKeyword" type="text" class="form-control" placeholder="Search for snippets" />
+            <div class="input-group-btn">
+                <div class="btn-group" role="group">
+
+                    <button type="button" class="btn btn-primary" ng-click="search()"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<table class="table table-striped" ng-init="getList()">
+    <thead>
+        <tr>
+@@Loop%Field%Table.Include=True%<th>$$Field$$</th>@@
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="currentColumn in @@Table.Name@@List">
+
+@@Loop%Field%Table.Include=True%<td>{{currentColumn.$$Field$$}}</td>@@
+            
+            <td>
+                <!--<a class="glyphicon  glyphicon-remove" ng-click="deleteCompany($index,CurrentItem.Id)"></a>
+                <a class="glyphicon  glyphicon-edit" ng-click="EditItem(CurrentItem)"></a>-->
+            </td>
+        </tr>
+        <tr ng-show="CompaniesList.length == 0">
+            <td colspan="4">no data </td>
+        </tr>
+    </tbody>
+</table>
+<!--<a ng-click="showAdd@@Table.Name@@Form(true)" class="btn btn-primary">Add</a>-->

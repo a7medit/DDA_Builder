@@ -1,0 +1,127 @@
+
+
+var CompanyApp = angular.module('@@Table.Name@@App', ['ngRoute', 'checklist-model', 'ngMessages']);
+
+CompanyApp.config(['$routeProvider', function ($routeProvider) {
+    $routeProvider.
+        when('/add', {
+            templateUrl: '../App/@@Table.Name@@/Views/addForm.html',
+            controller: '@@Table.Name@@Ctrl'
+        })
+        .when('/list', {
+            templateUrl: '../App/@@Table.Name@@/Views/list.html',
+            controller: '@@Table.Name@@Ctrl'
+        })
+        .when('/edit/:id', {
+            templateUrl: '../App/@@Table.Name@@/Views/addForm.html',
+            controller: '@@Table.Name@@Ctrl'
+        })
+        .otherwise({
+            redirectTo: '/list'
+        });
+
+}]);
+
+
+CompanyApp
+    .controller('CustomerCtrl', ['$scope', '$http', '$location', '$routeParams', function ($scope, $http, $location, $routeParams) {
+        $scope.@@Table.Name@@List = [];
+        $scope.states = { showAdddFrom: false };
+
+        if ($scope.current@@Table.Name@@ === undefined) {
+            $scope.current@@Table.Name@@ = null;
+        }
+
+        if ($routeParams.id) {
+            //$http.get('/@@Table.Name@@/Get').success(function (data) {
+            //    $scope.current@@Table.Name@@ = data;
+            //});
+            $http({
+                url: '/@@Table.Name@@/Get',
+                method: "GET",
+                params: { id: $routeParams.id }
+            }).success(function (data) {
+                $scope.current@@Table.Name@@ = data;
+            });
+        }
+
+        $scope.sortType = 'name'; // set the default sort type
+        $scope.sortReverse = false;  // set the default sort order
+        $scope.searchKeyword = '';     // set the default 
+
+
+        $scope.errors = {};
+
+        function updateErrors(errors) {
+            $scope.errors.formErrors = {};
+            $scope.errors.formErrorsSummary = errors;
+            $scope.errors.pageError = "";
+
+            if (errors) {
+                for (var i = 0; i < errors.length; i++) {
+                    $scope.errors.formErrors[errors[i].Key] = errors[i].Message;
+                }
+            }
+        }
+
+        $scope.handleErrors = function (data) {
+            if (data.Errors) {
+                updateErrors(data.Errors);
+            } else if (data.message) {
+                $scope.errors.pageError = data.message;
+            } else if (data) {
+                $scope.errors.pageError = data;
+            } else {
+                $scope.errors.pageError = "An unexpected error has occurred, please try again later.";
+            }
+        };
+
+
+        $scope.getList = function () {
+            $http.get('/@@Table.Name@@/GetList').success(function (data) {
+                $scope.@@Table.Name@@List = data;
+            });
+        }
+
+        $scope.showAdd@@Table.Name@@Form = function (showForm) {
+            $scope.states.showAdddFrom = showForm;
+            if (showForm) {
+                $location.path('/add');
+            } else {
+                $location.path('/list');
+            }
+        }
+
+
+        $scope.Edit@@Table.Name@@ = function (customer) {
+            //debugger;
+            $scope.current@@Table.Name@@ = customer;
+            //$location.path('/add/');
+            $location.path('/add/').search({ id: @@Table.Name@@.Id });
+        }
+
+        $scope.save@@Table.Name@@ = function () {
+            $http.post('/@@Table.Name@@/SaveCustomer', $scope.current@@Table.Name@@).success(function (data) {
+                $scope.@@Table.Name@@List.push(data);
+                $scope.showAdd@@Table.Name@@Form(false);
+            }).error(function(data, status, headers, config) {
+                $scope.handleErrors(data);
+            });
+        }
+
+
+        $scope.delete@@Table.Name@@ = function (index, id) {
+            $http.post('/@@Table.Name@@/Delete', { id: id }).success(function (data) {
+                $scope.@@Table.Name@@List.splice(index);
+            });
+        }
+
+
+        $scope.search = function () {
+            $http.get('/@@Table.Name@@/GetList?keyword=' + $scope.searchKeyword).success(function (data) {
+                $scope.@@Table.Name@@List = data;
+            });
+        }
+
+
+    }]);
