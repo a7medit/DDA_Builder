@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,12 +19,33 @@ namespace DDA_Builder
         public Form1()
         {
             InitializeComponent();
+
+
+
+            itwmslocations.Add("Angular ViewModel", @"CRMP.Models\@@Model.Name@@ViewModel.cs");
+            itwmslocations.Add("Administrator functions", "");
+            itwmslocations.Add("MVC controller", @"CRMP.Web\Controllers\@@Model.Name@@Controller.cs");
+            itwmslocations.Add("MVC view", @"CRMP.Web\Views\@@Model.Name@@\Index.cshtml");
+            itwmslocations.Add("List template", @"CRMP.Web\App\@@Model.Name@@\Views\list.html");
+            itwmslocations.Add("Add template", @"CRMP.Web\App\@@Model.Name@@\Views\AddForm.html");
+            itwmslocations.Add("Angular controller", @"CRMP.Web\App\\@@Model.Name@@\@@Model.Name@@Ctrl.js");
+
+            //foreach (var item in itwmslocations)
+            //{
+            //    int i = checkedListBox1.Items.Add(item.Key);
+            //    checkedListBox1.SetItemCheckState(i, CheckState.Checked);
+            //}
+
+           
         }
+
+        Dictionary<string, string> itwmslocations = new Dictionary<string, string>();
 
         List<string> Tables = new List<string>();
         string textTemplate = "";
         private void Form1_Load(object sender, EventArgs e)
         {
+            textBox1.Text = Properties.Settings.Default.ApplicationPath;
             //get all templates
             string TemplateFolder = AppDomain.CurrentDomain.BaseDirectory.ToString()+ @"Text template";
             DirectoryInfo d = new DirectoryInfo(TemplateFolder);//Assuming Test is your Folder
@@ -48,6 +70,7 @@ namespace DDA_Builder
                 Tables.Add(r[0].ToString());
 
                 comboBox1.Items.Add(r[0].ToString());
+                RelationTable.Items.Add(r[0].ToString());
             }
             con.Close();
 
@@ -66,7 +89,9 @@ namespace DDA_Builder
                 int row = dataGridView1.Rows.Add();
                 dataGridView1[0, row].Value = r[0].ToString();
                 dataGridView1[1, row].Value = r[1].ToString();
+                dataGridView1[4, row].Value = !Convert.ToBoolean(r[3].ToString());
                 dataGridView1[2, row].Value = true;
+              
             }
             con.Close();
         }
@@ -103,7 +128,14 @@ namespace DDA_Builder
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Dictionary<string,string> tabs = new Dictionary<string, string>();
+            CreateAddView("");
+        }
+
+
+        string CreateAddView(string SavePath)
+        {
+            string Modelname = ModelName(comboBox1.Text);
+            Dictionary<string, string> tabs = new Dictionary<string, string>();
             bool hastabs = false;
             foreach (DataGridViewRow datarowdata in dataGridView1.Rows)
             {
@@ -135,40 +167,68 @@ namespace DDA_Builder
                         {
                             if (first)
                             {
-                                Class += "<li class='active'><a data-toggle='tab' href='#"+ datarowdata.Cells[3].Value.ToString() + "'>"+ datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
-                                tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='"+ datarowdata.Cells[3].Value.ToString() + "' class='tab-pane fade in active'>");
+                                Class += "<li class='active'><a data-toggle='tab' href='#" + datarowdata.Cells[3].Value.ToString() + "'>" + datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
+                                tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='" + datarowdata.Cells[3].Value.ToString() + "' class='tab-pane fade in active'>");
                                 first = false;
                             }
                             else
                             {
                                 Class += "<li><a data-toggle='tab' href='#" + datarowdata.Cells[3].Value.ToString() + "'>" + datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
-                                tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='"+ datarowdata.Cells[3].Value.ToString() + "' class='tab - pane fade'>");
+                                tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='" + datarowdata.Cells[3].Value.ToString() + "' class='tab - pane fade'>");
                             }
-        
+
                         }
                     }
                 }
-                Class += "</ul>" + System.Environment.NewLine ;
-                
+                Class += "</ul>" + System.Environment.NewLine;
+
             }
 
-             Class += @"<form role='form' name='"+comboBox1.Text+ "Form' ng-app='AngularMVCApp' ng-controller='" + comboBox1.Text + "Controller'>" + System.Environment.NewLine;
-            
-            if(hastabs)
+            Class += @"<form role='form' name='" + Modelname + "Form' ng-controller='" + Modelname + "Ctrl' data-ng-init='init()'>" + System.Environment.NewLine;
+
+            //add validation errors
+            Class += @"<div class='alert alert-error ng - cloak' ng-cloak ng-if='errors.formErrorsSummary.length > 0'>< h4 > The following errors were found:</ h4 >< ul ng - repeat = 'error in errors.formErrorsSummary' >< li class='ng-cloak'>{{error.Message}}</li></ul></div>" + System.Environment.NewLine;
+
+            if (hastabs)
                 Class += "<div class='tab-content'>" + System.Environment.NewLine;
 
             foreach (DataGridViewRow datarowdata in dataGridView1.Rows)
             {
-                if (datarowdata.Cells[0].Value != null && (bool) datarowdata.Cells[2].Value)
+                if (datarowdata.Cells[2].Value != null && bool.Parse(datarowdata.Cells[2].Value.ToString()) == false)
+                    continue;
+                if (datarowdata.Cells[0].Value != null && (bool)datarowdata.Cells[2].Value)
                 {
                     string item = "";
-                    item += " <div class='form - group'> " + System.Environment.NewLine;
+                    if (datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True")
+                    {
+                        item += " <div class='form-group' ng-class=\"{ 'has-error': " + Modelname + "." + datarowdata.Cells[0].Value.ToString() + ".$invalid }\"> " + System.Environment.NewLine;
+                    }
+                    else
+                        item += " <div class='form-group'> " + System.Environment.NewLine;
                     item += " <label>" + datarowdata.Cells[0].Value.ToString() + ":</label> " +
                              System.Environment.NewLine;
 
                     item += " <input class='form-control' id='" + datarowdata.Cells[0].Value.ToString() +
-                             "' ng-model='current" + comboBox1.Text + "." + datarowdata.Cells[0].Value.ToString() +
-                             "'>" + System.Environment.NewLine;
+                             "' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
+                             "' " + ((datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True") ? "required" : "") + "     " + ((datarowdata.Cells[5].Value != null && datarowdata.Cells[5].Value.ToString().Trim() != "") ? "maxlength=" + datarowdata.Cells[5].Value.ToString().Trim() + "  " : "") + "    >" + System.Environment.NewLine;
+
+                    //validation tags
+                    if ((datarowdata.Cells[5].Value != null && datarowdata.Cells[4].Value.ToString().Trim() != "") || (datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True"))
+                    {
+                        item += " <div ng-messages='" + Modelname + "Form." + datarowdata.Cells[0].Value.ToString() + ".$touched && " + Modelname + "Form." + datarowdata.Cells[0].Value.ToString() + ".$error' style='color: maroon' role='alert'>" + System.Environment.NewLine;
+                    }
+                    if (datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True")
+                    {
+                        item += " <div ng-message='required'>" + datarowdata.Cells[0].Value.ToString() + " is required</div>" + System.Environment.NewLine;
+                    }
+                    if (datarowdata.Cells[5].Value != null && datarowdata.Cells[4].Value.ToString().Trim() != "")
+                    {
+                        item += " <div ng-message='maxlength'>" + datarowdata.Cells[0].Value.ToString() + " is too long</div>";
+                    }
+                    if ((datarowdata.Cells[5].Value != null && datarowdata.Cells[4].Value.ToString().Trim() != "") || (datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True"))
+                    {
+                        item += " </div>" + System.Environment.NewLine;
+                    }
 
                     item += " </div>" + System.Environment.NewLine;
                     if (hastabs)
@@ -183,14 +243,18 @@ namespace DDA_Builder
             }
             foreach (var tabcode in tabs)
             {
-                Class += tabcode.Value+ System.Environment.NewLine + " </div> "+ System.Environment.NewLine;
+                Class += tabcode.Value + System.Environment.NewLine + " </div> " + System.Environment.NewLine;
             }
-            Class += "    <button type='button' class='btn btn-primary' ng-click='add"+ comboBox1.Text + "()'>Add </ button > ";
+            Class += "    <button type='button' class='btn btn-primary' ng-click='save" + Modelname + "()'>Add </button>";
             if (hastabs)
                 Class += "</div>";
             Class += "</form>";
-            ShowTextForm f = new ShowTextForm(Class);
-            f.ShowDialog();
+            if (SavePath == "")
+            {
+                ShowTextForm f = new ShowTextForm(Class);
+                f.ShowDialog();
+            }
+            return Class;
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -220,6 +284,34 @@ namespace DDA_Builder
             ShowTextForm f = new ShowTextForm(p.Parse());
             f.ShowDialog();
         }
+
+        void parserWithcreateFile(string File,string location)
+        {
+            DataTable data = GetDataTableFromDGV(dataGridView1);
+            if (comboBox2.Items.Contains(File+ ".txt"))
+            {
+                comboBox2.SelectedItem = File + ".txt";
+                Parser p = new Parser(comboBox1.Text, data, textTemplate);
+                string parsedtext = p.Parse();
+                if (location != "")
+                {
+                    string SaveLocation = textBox1.Text + @"\" + p.Parse(location);
+                    //ShowTextForm f = new ShowTextForm(parsedtext);
+                    //f.ShowDialog();
+                    System.IO.Directory.CreateDirectory(new FileInfo(SaveLocation).Directory.FullName);
+                    
+
+                    System.IO.File.WriteAllText(SaveLocation, parsedtext);
+                }
+                else
+                {
+                    ShowTextForm f = new ShowTextForm(parsedtext);
+                    f.ShowDialog();
+
+                }
+            }
+        }
+
         public DataTable GetContentAsDataTable(bool IgnoreHideColumns = false)
         {
             try
@@ -274,7 +366,78 @@ namespace DDA_Builder
             return dt;
         }
 
+        private void button3_Click(object sender, EventArgs e)
+        {
 
+        }
+
+        string ModelName(string TableName)
+        {
+            string _ModelName = "";
+            var d = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
+            _ModelName = d.Singularize(TableName);
+            if (_ModelName != "")
+                _ModelName = _ModelName.Substring(0, 1).ToUpper() + _ModelName.Substring(1, _ModelName.Length - 1);
+            return _ModelName;
+        }
+        private void button6_Click(object sender, EventArgs e)
+        {
+
+            foreach (int i in checkedListBox1.CheckedIndices)
+            {
+
+                string file = checkedListBox1.Items[i].ToString();
+                string location = "";
+                itwmslocations.TryGetValue(file,out location);
+
+                if(file == "Add template")
+                {
+                   string parse = CreateAddView(location);
+                    Parser p = new Parser(comboBox1.Text, new DataTable(), "");
+                    string SaveLocation = textBox1.Text + @"\" + p.Parse(location);
+                    //ShowTextForm f = new ShowTextForm(parsedtext);
+                    //f.ShowDialog();
+                    System.IO.Directory.CreateDirectory(new FileInfo(SaveLocation).Directory.FullName);
+
+
+                    System.IO.File.WriteAllText(SaveLocation, parse);
+                }
+                else
+                parserWithcreateFile(file, location);
+        
+
+
+
+
+
+             checkedListBox1.SetItemCheckState(i, CheckState.Unchecked);
+            }
+
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog di = new FolderBrowserDialog();
+            di.ShowDialog();
+            textBox1.Text = di.RootFolder.ToString();
+            if (!string.IsNullOrEmpty(textBox1.Text))
+            {
+                Properties.Settings.Default.ApplicationPath = textBox1.Text;
+                Properties.Settings.Default.Save();
+            }
+        }
+
+        private void textBox1_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == '\r')
+            {
+                if(!string.IsNullOrEmpty(textBox1.Text ))
+                {
+                    Properties.Settings.Default.ApplicationPath = textBox1.Text;
+                    Properties.Settings.Default.Save();
+                }
+            }
+        }
     }
     }
 

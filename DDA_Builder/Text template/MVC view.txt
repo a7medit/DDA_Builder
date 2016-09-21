@@ -1,0 +1,13 @@
+@using CRMP.Data
+
+@section scripts{
+
+    <script src="~/App/@@Model.Name@@/@@Model.Name@@Ctrl.js"></script>
+}
+
+
+<div ng-app="@@Model.Name@@App" ng-controller="@@Model.Name@@Ctrl">
+    <div ng-view></div>
+</div>
+
+

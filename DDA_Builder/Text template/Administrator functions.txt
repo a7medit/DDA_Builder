@@ -1,0 +1,108 @@
+        #region @@Model.Name@@
+
+     public void Save@@Model.Name@@(@@Model.Name@@ViewModel @@Model.Name@@ViewModel)
+        {
+            CRMPContext context = new CRMPContext();
+            @@Model.Name@@ _@@Model.Name@@;
+            bool isNew = @@Model.Name@@ViewModel.Id == 0;
+            if (!isNew)
+            {
+                _@@Model.Name@@ = context.@@Table.Name@@.FirstOrDefault(x => x.Id == @@Model.Name@@ViewModel.Id) ?? new @@Model.Name@@();
+                //_@@Model.Name@@.CompanyWholesalerTypes.Clear();
+            }
+            else
+            {
+                _@@Model.Name@@ = new @@Model.Name@@();
+            }
+
+// add loop
+
+@@Loop%Field%Table.Include=True%  _@@Model.Name@@.$$Field$$ = @@Model.Name@@ViewModel.$$Field$$;@@
+
+            _@@Model.Name@@.IsActive = 1;
+            _@@Model.Name@@= 0;
+            _@@Model.Name@@.CreatedAT = DateTime.Today.Date;
+            _@@Model.Name@@.ModifiedAt = DateTime.Today.Date;
+
+            if (isNew)
+            {
+                context.@@Table.Name@@.Add(_@@Model.Name@@);
+            }
+            else
+            {
+                context.Entry(_@@Model.Name@@).State = EntityState.Modified;
+            }
+            context.SaveChanges();
+        }
+
+        public @@Model.Name@@ViewModel Get@@Model.Name@@(int @@Model.Name@@Id)
+        {
+            CRMPContext context = new CRMPContext();
+            var _@@Model.Name@@ = context.@@Table.Name@@.SingleOrDefault(d => d.Id == @@Model.Name@@Id);
+
+            @@Model.Name@@ViewModel _@@Model.Name@@viewmpde = new @@Model.Name@@ViewModel()
+            {
+
+@@Loop%Field%Table.Include=True%  $$Field$$ = _@@Model.Name@@.$$Field$$,@@
+            };
+
+
+            return _@@Model.Name@@viewmpde;
+        }
+
+        public List<@@Model.Name@@> Get@@Table.Name@@List()
+        {
+            CRMPContext context = new CRMPContext();
+            return context.@@Table.Name@@.ToList();
+        }
+
+
+        public List<@@Model.Name@@ViewModel> Search@@Table.Name@@(string keyword)
+        {
+            CRMPContext context = new CRMPContext();
+            var result = context.@@Table.Name@@.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                result = result.Where(c => c.Name.Contains(keyword) ||
+                c.Email.Contains(keyword));
+            }
+            var test = result.Select(x => new
+            {
+                @@Loop%Field%Table.Include=True%  x.$$Field$$,@@
+            }).ToList().Select(x => new @@Model.Name@@ViewModel
+            {
+                @@Loop%Field%Table.Include=True%  $$Field$$ = x.$$Field$$,@@
+            }).ToList();
+            return test;//result.ToList();
+        }
+
+        public void Delete@@Model.Name@@(int @@Model.Name@@Id)
+        {
+            CRMPContext context = new CRMPContext();
+            var _@@Model.Name@@ = context.@@Table.Name@@.FirstOrDefault(x => x.Id == @@Model.Name@@Id);
+            context.@@Table.Name@@.Remove(_@@Model.Name@@);
+            try
+            {
+                context.SaveChanges();
+            }catch(Exception ex) {
+                Console.Write(ex.Message);
+            }
+        }
+
+
+        public @@Model.Name@@ViewModel Get@@Model.Name@@ById(int @@Model.Name@@Id)
+        {
+            CRMPContext context = new CRMPContext();
+            var result = context.@@Table.Name@@.AsQueryable();
+            var _@@Model.Name@@ = result.Select(x => new
+            {
+        @@Loop%Field%Table.Include=True%  x.$$Field$$,@@
+            }).Where(x => x.Id == @@Model.Name@@Id).ToList().Select(x => new @@Model.Name@@ViewModel
+            {
+       @@Loop%Field%Table.Include=True%  $$Field$$ = x.$$Field$$,@@
+            }).FirstOrDefault();
+            return _@@Model.Name@@ ;//result.ToList();
+        }
+
+
+		        #endregion

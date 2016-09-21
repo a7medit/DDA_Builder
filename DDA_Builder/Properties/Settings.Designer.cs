@@ -34,5 +34,17 @@ namespace DDA_Builder.Properties {
                 this["Connection"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ApplicationPath {
+            get {
+                return ((string)(this["ApplicationPath"]));
+            }
+            set {
+                this["ApplicationPath"] = value;
+            }
+        }
     }
 }

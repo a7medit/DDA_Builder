@@ -22,7 +22,7 @@
         </tr>
     </thead>
     <tbody>
-        <tr ng-repeat="currentColumn in @@Table.Name@@List">
+        <tr ng-repeat="currentColumn in @@Model.Name@@List">
 
 @@Loop%Field%Table.Include=True%<td>{{currentColumn.$$Field$$}}</td>@@
             

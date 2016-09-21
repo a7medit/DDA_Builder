@@ -29,6 +29,15 @@
         private void InitializeComponent()
         {
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.Field = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DataType = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Include = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Tabs = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.RequiredValidation = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.LenghtValidation = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.RelationTable = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.DisplayColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.DisplayType = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
@@ -38,10 +47,11 @@
             this.comboBox2 = new System.Windows.Forms.ComboBox();
             this.label2 = new System.Windows.Forms.Label();
             this.button5 = new System.Windows.Forms.Button();
-            this.Field = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.DataType = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Include = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.Tabs = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.button6 = new System.Windows.Forms.Button();
+            this.checkedListBox1 = new System.Windows.Forms.CheckedListBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.button7 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -55,11 +65,65 @@
             this.Field,
             this.DataType,
             this.Include,
-            this.Tabs});
+            this.Tabs,
+            this.RequiredValidation,
+            this.LenghtValidation,
+            this.RelationTable,
+            this.DisplayColumn,
+            this.DisplayType});
             this.dataGridView1.Location = new System.Drawing.Point(-1, 46);
             this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(636, 265);
+            this.dataGridView1.Size = new System.Drawing.Size(633, 289);
             this.dataGridView1.TabIndex = 0;
+            // 
+            // Field
+            // 
+            this.Field.HeaderText = "Field";
+            this.Field.Name = "Field";
+            // 
+            // DataType
+            // 
+            this.DataType.HeaderText = "DataType";
+            this.DataType.Name = "DataType";
+            // 
+            // Include
+            // 
+            this.Include.HeaderText = "Include";
+            this.Include.Name = "Include";
+            // 
+            // Tabs
+            // 
+            this.Tabs.HeaderText = "Tabs";
+            this.Tabs.Name = "Tabs";
+            // 
+            // RequiredValidation
+            // 
+            this.RequiredValidation.HeaderText = "R validation";
+            this.RequiredValidation.Name = "RequiredValidation";
+            // 
+            // LenghtValidation
+            // 
+            this.LenghtValidation.HeaderText = "LValidation";
+            this.LenghtValidation.Name = "LenghtValidation";
+            // 
+            // RelationTable
+            // 
+            this.RelationTable.HeaderText = "RTable";
+            this.RelationTable.Name = "RelationTable";
+            // 
+            // DisplayColumn
+            // 
+            this.DisplayColumn.HeaderText = "DisplayColumn";
+            this.DisplayColumn.Name = "DisplayColumn";
+            this.DisplayColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.DisplayColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // DisplayType
+            // 
+            this.DisplayType.HeaderText = "DislayType";
+            this.DisplayType.Items.AddRange(new object[] {
+            "ComboBox"});
+            this.DisplayType.Name = "DisplayType";
             // 
             // comboBox1
             // 
@@ -82,7 +146,7 @@
             // button1
             // 
             this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button1.Location = new System.Drawing.Point(80, 319);
+            this.button1.Location = new System.Drawing.Point(80, 352);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(99, 23);
             this.button1.TabIndex = 3;
@@ -93,7 +157,7 @@
             // button2
             // 
             this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button2.Location = new System.Drawing.Point(-1, 319);
+            this.button2.Location = new System.Drawing.Point(-1, 352);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 4;
@@ -104,17 +168,18 @@
             // button3
             // 
             this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button3.Location = new System.Drawing.Point(185, 319);
+            this.button3.Location = new System.Drawing.Point(185, 352);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(108, 23);
             this.button3.TabIndex = 5;
             this.button3.Text = "Angularjs controller";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // button4
             // 
             this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button4.Location = new System.Drawing.Point(299, 319);
+            this.button4.Location = new System.Drawing.Point(299, 352);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(99, 23);
             this.button4.TabIndex = 6;
@@ -125,7 +190,7 @@
             // comboBox2
             // 
             this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Location = new System.Drawing.Point(423, 12);
+            this.comboBox2.Location = new System.Drawing.Point(246, 12);
             this.comboBox2.Name = "comboBox2";
             this.comboBox2.Size = new System.Drawing.Size(121, 21);
             this.comboBox2.TabIndex = 7;
@@ -134,7 +199,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(361, 15);
+            this.label2.Location = new System.Drawing.Point(189, 15);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(51, 13);
             this.label2.TabIndex = 8;
@@ -143,39 +208,74 @@
             // button5
             // 
             this.button5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.button5.Location = new System.Drawing.Point(404, 319);
+            this.button5.Location = new System.Drawing.Point(404, 352);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(221, 23);
+            this.button5.Size = new System.Drawing.Size(106, 23);
             this.button5.TabIndex = 9;
-            this.button5.Text = "Parse";
+            this.button5.Text = "Template Parse";
             this.button5.UseVisualStyleBackColor = true;
             this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
-            // Field
+            // button6
             // 
-            this.Field.HeaderText = "Field";
-            this.Field.Name = "Field";
+            this.button6.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.button6.Location = new System.Drawing.Point(638, 352);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(106, 23);
+            this.button6.TabIndex = 10;
+            this.button6.Text = "Generate";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
-            // DataType
+            // checkedListBox1
             // 
-            this.DataType.HeaderText = "DataType";
-            this.DataType.Name = "DataType";
+            this.checkedListBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.checkedListBox1.FormattingEnabled = true;
+            this.checkedListBox1.Location = new System.Drawing.Point(638, 46);
+            this.checkedListBox1.Name = "checkedListBox1";
+            this.checkedListBox1.Size = new System.Drawing.Size(121, 289);
+            this.checkedListBox1.TabIndex = 11;
             // 
-            // Include
+            // textBox1
             // 
-            this.Include.HeaderText = "Include";
-            this.Include.Name = "Include";
+            this.textBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox1.Location = new System.Drawing.Point(439, 12);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(193, 20);
+            this.textBox1.TabIndex = 12;
+            this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
-            // Tabs
+            // label3
             // 
-            this.Tabs.HeaderText = "Tabs";
-            this.Tabs.Name = "Tabs";
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(376, 15);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(62, 13);
+            this.label3.TabIndex = 13;
+            this.label3.Text = "Folder path";
+            // 
+            // button7
+            // 
+            this.button7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button7.Location = new System.Drawing.Point(638, 12);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(121, 23);
+            this.button7.TabIndex = 14;
+            this.button7.Text = "Set folder";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(637, 354);
+            this.ClientSize = new System.Drawing.Size(765, 387);
+            this.Controls.Add(this.button7);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.checkedListBox1);
+            this.Controls.Add(this.button6);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.comboBox2);
@@ -211,6 +311,16 @@
         private System.Windows.Forms.DataGridViewTextBoxColumn DataType;
         private System.Windows.Forms.DataGridViewCheckBoxColumn Include;
         private System.Windows.Forms.DataGridViewTextBoxColumn Tabs;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn RequiredValidation;
+        private System.Windows.Forms.DataGridViewTextBoxColumn LenghtValidation;
+        private System.Windows.Forms.DataGridViewComboBoxColumn RelationTable;
+        private System.Windows.Forms.DataGridViewTextBoxColumn DisplayColumn;
+        private System.Windows.Forms.DataGridViewComboBoxColumn DisplayType;
+        private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.CheckedListBox checkedListBox1;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button button7;
     }
 }
 

@@ -1,0 +1,21 @@
+
+using System;
+
+
+namespace CRMP.Models
+{
+
+    public class @@Model.Name@@ViewModel
+    {
+
+
+@@Loop%Field%Table.Include=True% public $$Field.Type$$ $$Field$$ { get; set; } @@
+
+
+    }
+
+
+}
+
+
+
