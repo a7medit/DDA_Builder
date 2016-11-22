@@ -11,6 +11,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using RazorEngine;
+using RazorEngine.Templating;
+using RazorEngine.Compilation.ReferenceResolver;
+using RazorEngine.Configuration;
 
 namespace DDA_Builder
 {
@@ -20,23 +24,21 @@ namespace DDA_Builder
         {
             InitializeComponent();
 
-
-
             itwmslocations.Add("Angular ViewModel", @"CRMP.Models\@@Model.Name@@ViewModel.cs");
             itwmslocations.Add("Administrator functions", "");
             itwmslocations.Add("MVC controller", @"CRMP.Web\Controllers\@@Model.Name@@Controller.cs");
             itwmslocations.Add("MVC view", @"CRMP.Web\Views\@@Model.Name@@\Index.cshtml");
-            itwmslocations.Add("List template", @"CRMP.Web\App\@@Model.Name@@\Views\list.html");
-            itwmslocations.Add("Add template", @"CRMP.Web\App\@@Model.Name@@\Views\AddForm.html");
+            itwmslocations.Add("List template", @"CRMP.Web\Views\@@Model.Name@@\List.cshtml");
+            itwmslocations.Add("Add template", @"CRMP.Web\Views\@@Model.Name@@\AddForm.cshtml");
             itwmslocations.Add("Angular controller", @"CRMP.Web\App\\@@Model.Name@@\@@Model.Name@@Ctrl.js");
 
-            //foreach (var item in itwmslocations)
-            //{
-            //    int i = checkedListBox1.Items.Add(item.Key);
-            //    checkedListBox1.SetItemCheckState(i, CheckState.Checked);
-            //}
+            foreach (var item in itwmslocations)
+            {
+                int i = checkedListBox1.Items.Add(item.Key);
+                //checkedListBox1.SetItemCheckState(i, CheckState.Checked);
+            }
 
-           
+
         }
 
         Dictionary<string, string> itwmslocations = new Dictionary<string, string>();
@@ -70,7 +72,7 @@ namespace DDA_Builder
                 Tables.Add(r[0].ToString());
 
                 comboBox1.Items.Add(r[0].ToString());
-                RelationTable.Items.Add(r[0].ToString());
+                RTable.Items.Add(r[0].ToString());
             }
             con.Close();
 
@@ -167,14 +169,14 @@ namespace DDA_Builder
                         {
                             if (first)
                             {
-                                Class += "<li class='active'><a data-toggle='tab' href='#" + datarowdata.Cells[3].Value.ToString() + "'>" + datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
+                                Class += "<li class='active'><a data-toggle='tab' href data-target='#" + datarowdata.Cells[3].Value.ToString() + "'>" + datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
                                 tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='" + datarowdata.Cells[3].Value.ToString() + "' class='tab-pane fade in active'>");
                                 first = false;
                             }
                             else
                             {
-                                Class += "<li><a data-toggle='tab' href='#" + datarowdata.Cells[3].Value.ToString() + "'>" + datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
-                                tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='" + datarowdata.Cells[3].Value.ToString() + "' class='tab - pane fade'>");
+                                Class += "<li><a data-toggle='tab' href data-target='#" + datarowdata.Cells[3].Value.ToString() + "'>" + datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
+                                tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='" + datarowdata.Cells[3].Value.ToString() + "' class='tab-pane fade'>");
                             }
 
                         }
@@ -183,11 +185,21 @@ namespace DDA_Builder
                 Class += "</ul>" + System.Environment.NewLine;
 
             }
-
-            Class += @"<form role='form' name='" + Modelname + "Form' ng-controller='" + Modelname + "Ctrl' data-ng-init='init()'>" + System.Environment.NewLine;
+            Class += @"@{
+    Layout = null;
+}";
+            Class += @"
+    <h3>
+        " + Modelname + @" Edit
+      </h3> 
+<div ng-controller=' " + Modelname + @"Ctrl'>";
+            Class += @"    <div class='row'>
+        <div class='panel panel-default'>
+            <div class='panel-body'>";
+            Class += @"<form role='form' name='" + Modelname + "Form'  data-ng-init='init()'>" + System.Environment.NewLine;
 
             //add validation errors
-            Class += @"<div class='alert alert-error ng - cloak' ng-cloak ng-if='errors.formErrorsSummary.length > 0'>< h4 > The following errors were found:</ h4 >< ul ng - repeat = 'error in errors.formErrorsSummary' >< li class='ng-cloak'>{{error.Message}}</li></ul></div>" + System.Environment.NewLine;
+            Class += @"<div class='alert alert-error ng-cloak' ng-cloak ng-if='errors.formErrorsSummary.length > 0'><h4 > The following errors were found:</h4 ><ul ng-repeat = 'error in errors.formErrorsSummary' ><li class='ng-cloak'>{{error.Message}}</li></ul></div>" + System.Environment.NewLine;
 
             if (hastabs)
                 Class += "<div class='tab-content'>" + System.Environment.NewLine;
@@ -201,15 +213,33 @@ namespace DDA_Builder
                     string item = "";
                     if (datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True")
                     {
-                        item += " <div class='form-group' ng-class=\"{ 'has-error': " + Modelname + "." + datarowdata.Cells[0].Value.ToString() + ".$invalid }\"> " + System.Environment.NewLine;
+                        item += " <div class='form-group col-sm-6' "+ (datarowdata.Cells[1].Value.ToString() == "datetime"? " ng-controller='DatepickerDemoCtrl as dpick' ":"") + @" ng-class=""{ 'has-error': " + Modelname + "Form." + datarowdata.Cells[0].Value.ToString() + ".$invalid }\"> " + System.Environment.NewLine;
                     }
                     else
-                        item += " <div class='form-group'> " + System.Environment.NewLine;
+                        item += @" <div class=""form-group col-sm-6"" " + (datarowdata.Cells[1].Value.ToString() == "datetime" ? " ng-controller='DatepickerDemoCtrl as dpick' " : "") + "> " + System.Environment.NewLine;
                     item += " <label>" + datarowdata.Cells[0].Value.ToString() + ":</label> " +
                              System.Environment.NewLine;
 
-                    item += " <input class='form-control' id='" + datarowdata.Cells[0].Value.ToString() +
-                             "' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
+                    if(datarowdata.Cells[1].Value.ToString() == "datetime" )
+                    {
+                        item += @"<p class='input-group'>
+                                              <input   name='" + datarowdata.Cells[0].Value.ToString() + "' id='" + datarowdata.Cells[0].Value.ToString() + "' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
+                             @"' " + ((datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True") ? "required" : "") + "     " + ((datarowdata.Cells[5].Value != null && datarowdata.Cells[5].Value.ToString().Trim() != "") ? "maxlength=" + datarowdata.Cells[5].Value.ToString().Trim() + "  " : "") + @"    class='form-control' type='text' uib-datepicker-popup='{{dpick.format}}'  is-open='dpick.opened' min-date='dpick.minDate' max-date=""'2050-12-22'"" uib-datepicker-options=""dpick.dateOptions""
+                                                   date-disabled=""dpick.disabled(date, mode)"" close-text=""Close"" />
+                                            <span class=""input-group-btn"">
+                                                <button class=""btn btn-default"" type=""button"" ng-click=""dpick.open($event)"">
+                                                    <em class=""fa fa-calendar""></em>
+                                                </button>
+                                            </span>
+                                        </p>"+ System.Environment.NewLine;
+                    }
+                    else if (datarowdata.Cells[6].Value != null && datarowdata.Cells[7].Value != null)
+                    {
+                        item += " <select class='form-control' name='" + datarowdata.Cells[0].Value.ToString() + "' id='" + datarowdata.Cells[0].Value.ToString() + "' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
+         "' " + ((datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True") ? "required" : "") + "     " + ((datarowdata.Cells[5].Value != null && datarowdata.Cells[5].Value.ToString().Trim() != "") ? "maxlength=" + datarowdata.Cells[5].Value.ToString().Trim() + "  " : "") + @"  ng-options=""i." + ModelName(datarowdata.Cells[8].Value.ToString().Trim()) + @" as (i." + ModelName(datarowdata.Cells[7].Value.ToString().Trim()) + @") for i in " + ModelName(datarowdata.Cells[6].Value.ToString().Trim()) + @"List""  ><option></option> </select>" + System.Environment.NewLine;
+                    }
+                        else
+                    item += " <input class='form-control' name='"+ datarowdata.Cells[0].Value.ToString() + "' id='" + datarowdata.Cells[0].Value.ToString() +"' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
                              "' " + ((datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True") ? "required" : "") + "     " + ((datarowdata.Cells[5].Value != null && datarowdata.Cells[5].Value.ToString().Trim() != "") ? "maxlength=" + datarowdata.Cells[5].Value.ToString().Trim() + "  " : "") + "    >" + System.Environment.NewLine;
 
                     //validation tags
@@ -245,10 +275,12 @@ namespace DDA_Builder
             {
                 Class += tabcode.Value + System.Environment.NewLine + " </div> " + System.Environment.NewLine;
             }
-            Class += "    <button type='button' class='btn btn-primary' ng-click='save" + Modelname + "()'>Add </button>";
             if (hastabs)
                 Class += "</div>";
             Class += "</form>";
+            Class += "</div>";
+            Class += "    <button type='button' class='btn btn-primary' ng-click='save" + Modelname + "()' ng-disabled='CarForm.$invalid'>Add " + Modelname + "</button>";
+            Class += @"</div></div></div>";
             if (SavePath == "")
             {
                 ShowTextForm f = new ShowTextForm(Class);
@@ -279,9 +311,19 @@ namespace DDA_Builder
 
         private void button5_Click(object sender, EventArgs e)
         {
+
+            //string template = "Hello @Model.Tablename, < div ng - controller = '@Model.Name > ";
             DataTable data = GetDataTableFromDGV(dataGridView1);
-            Parser p = new Parser(comboBox1.Text, data,textTemplate);
-            ShowTextForm f = new ShowTextForm(p.Parse());
+
+            var config = new TemplateServiceConfiguration();
+            // .. configure your instance
+            config.ReferenceResolver = new MyIReferenceResolver();
+            Engine.Razor = RazorEngineService.Create(config);
+
+            var result =
+                Engine.Razor.RunCompile(textTemplate, "templateKey",null, new  { Name = "Customer",TableName = "Customers",TableDefination = data });
+            ShowTextForm f = new ShowTextForm(result);
+
             f.ShowDialog();
         }
 
@@ -301,7 +343,7 @@ namespace DDA_Builder
                     System.IO.Directory.CreateDirectory(new FileInfo(SaveLocation).Directory.FullName);
                     
 
-                    System.IO.File.WriteAllText(SaveLocation, parsedtext);
+                    System.IO.File.WriteAllText(SaveLocation, parsedtext, System.Text.Encoding.UTF8);
                 }
                 else
                 {
@@ -400,7 +442,7 @@ namespace DDA_Builder
                     System.IO.Directory.CreateDirectory(new FileInfo(SaveLocation).Directory.FullName);
 
 
-                    System.IO.File.WriteAllText(SaveLocation, parse);
+                    System.IO.File.WriteAllText(SaveLocation, parse, System.Text.Encoding.UTF8);
                 }
                 else
                 parserWithcreateFile(file, location);

@@ -53,12 +53,17 @@ namespace DDA_Builder
             }
 
             }
-            MatchCollection mcol2 = Regex.Matches(_textTemplate, @"@@(.*?)@@");
+            MatchCollection mcol2 = Regex.Matches(_textTemplate, @"@@((\n|\r|\r\n|.)*?)@@");
             foreach (Match m in mcol2)
             {
                 if (m.Value.Contains("Loop"))
                 {
                     string result = Loop(m.Value);
+                    _textTemplate = _textTemplate.Replace(m.Value, result);
+                }
+                if (m.Value.Contains("IFF"))
+                {
+                    string result = IFF(m.Value);
                     _textTemplate = _textTemplate.Replace(m.Value, result);
                 }
             }
@@ -103,20 +108,86 @@ namespace DDA_Builder
             string[] Components = syntax.Split('%');
             string switcher = Components[1];
             string condition = Components[2];
-            
-            string conditionColumn = condition.Split('=')[0].Replace("Table.","");
-            string conditionValue = condition.Split('=')[1];
+            string _operator = "";
+            if (condition.Contains("!="))
+                _operator = "!=";
+            else
+                _operator = "=";
+            string conditionColumn = condition.Split(_operator.ToCharArray())[0].Replace("Table.", "");
+            string conditionValue = condition.Split(_operator.ToCharArray())[1] != null?condition.Split(_operator.ToCharArray())[1]: condition.Split(_operator.ToCharArray())[2];
             string body = Components[3];
             for (int i = 0; i < _Datatable.Rows.Count; i++)
             {
+                bool valid = false; 
+                if(_operator == "=")
+                {
+                    if(conditionValue.ToLower() == "null")
+                    {
+                        if (_Datatable.Rows[i][conditionColumn] == null)
+                            valid = true;
+                    }
+                    else if (_Datatable.Rows[i][conditionColumn].ToString() == conditionValue)
+                        valid = true;
+                }
+                else if (_operator == "!=")
+                {
+                    if (conditionValue.ToLower() == "null")
+                    {
+                        if (!string.IsNullOrEmpty(_Datatable.Rows[i][conditionColumn].ToString()))
+                            valid = true;
+                    }
+                    else if (_Datatable.Rows[i][conditionColumn].ToString() != conditionValue)
+                        valid = true;
+                }
          
-                if (_Datatable.Rows[i][conditionColumn].ToString() == conditionValue)
+                if (valid)
                 {
                     result += body.Replace(@"$$" + switcher + "$$", _Datatable.Rows[i][switcher].ToString()).Replace(@"$$" + switcher + ".Type$$", GetDataType(_Datatable.Rows[i][1].ToString())) + System.Environment.NewLine;
                 }
             }
             return result;
         }
+
+        string IFF(string syntax)
+        {
+            string switcher = "";
+            string result = "";
+            syntax = syntax.Replace("@@", "");
+            string[] Components = syntax.Split('%');
+            string condition = Components[1];
+            string _operator = "";
+            if (condition.Contains("!="))
+                _operator = "!=";
+            else
+                _operator = "=";
+            string conditionLeftSide = condition.Split(_operator.ToCharArray())[0];
+            string conditionValue = condition.Split(_operator.ToCharArray())[1] != null ? condition.Split(_operator.ToCharArray())[1] : condition.Split(_operator.ToCharArray())[2];
+            for (int i = 0; i < _Datatable.Rows.Count; i++)
+            {
+                bool valid = false;
+                if (_operator == "=")
+                {
+                     if (conditionLeftSide == conditionValue)
+                        valid = true;
+                }
+                else if (_operator == "!=")
+                {
+                     if (conditionLeftSide != conditionValue)
+                        valid = true;
+                }
+
+                if (valid)
+                {
+                    result = Components[2];
+                }
+                else
+                {
+                    result = Components[3];
+                }
+            }
+            return result;
+        }
+
         string GetDataType(string SqlType)
         {
             if (SqlType.Contains("varchar"))

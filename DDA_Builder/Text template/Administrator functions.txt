@@ -19,7 +19,7 @@
 
 @@Loop%Field%Table.Include=True%  _@@Model.Name@@.$$Field$$ = @@Model.Name@@ViewModel.$$Field$$;@@
 
-            _@@Model.Name@@.IsActive = 1;
+            _@@Model.Name@@.IsActive = true;
             _@@Model.Name@@= 0;
             _@@Model.Name@@.CreatedAT = DateTime.Today.Date;
             _@@Model.Name@@.ModifiedAt = DateTime.Today.Date;
@@ -57,22 +57,23 @@
         }
 
 
-        public List<@@Model.Name@@ViewModel> Search@@Table.Name@@(string keyword)
+        public List<@@Model.Name@@ViewModel> Search@@Table.Name@@(string keyword,int page, int pageSize,out int total, bool isActive)
         {
             CRMPContext context = new CRMPContext();
-            var result = context.@@Table.Name@@.AsQueryable();
+            var result = context.@@Table.Name@@.Where(c=> c.IsActive == isActive).AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword))
             {
                 result = result.Where(c => c.Name.Contains(keyword) ||
                 c.Email.Contains(keyword));
             }
+            total = result.Count();
             var test = result.Select(x => new
             {
                 @@Loop%Field%Table.Include=True%  x.$$Field$$,@@
             }).ToList().Select(x => new @@Model.Name@@ViewModel
             {
                 @@Loop%Field%Table.Include=True%  $$Field$$ = x.$$Field$$,@@
-            }).ToList();
+            }).Skip((page - 1) * pageSize).Take(pageSize).ToList();
             return test;//result.ToList();
         }
 
@@ -103,6 +104,23 @@
             }).FirstOrDefault();
             return _@@Model.Name@@ ;//result.ToList();
         }
+
+
+
+			@@Loop%Rtable%Table.Rtable!=null% 		 public List<LookupItemViewModel> Get$$Rtable$$Lookup()
+        {
+            CRMPContext context = new CRMPContext();
+            return context.$$Rtable$$.Where(pg =>
+            pg.IsActive).Select(d => new { d.Id, d.Name }).ToList().Select(x =>
+            new LookupItemViewModel
+            {
+                Id = x.Id,
+                Name = x.Name
+            }).ToList();
+        } @@
+
+
+
 
 
 		        #endregion

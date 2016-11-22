@@ -1,30 +1,8 @@
 
 
-var CompanyApp = angular.module('@@Model.Name@@App', ['ngRoute', 'checklist-model', 'ngMessages']);
-
-CompanyApp.config(['$routeProvider', function ($routeProvider) {
-    $routeProvider.
-        when('/add', {
-            templateUrl: '../App/@@Model.Name@@/Views/addForm.html',
-            controller: '@@Model.Name@@Ctrl'
-        })
-        .when('/list', {
-            templateUrl: '../App/@@Model.Name@@/Views/list.html',
-            controller: '@@Model.Name@@Ctrl'
-        })
-        .when('/edit/:id', {
-            templateUrl: '../App/@@Model.Name@@/Views/addForm.html',
-            controller: '@@Model.Name@@Ctrl'
-        })
-        .otherwise({
-            redirectTo: '/list'
-        });
-
-}]);
-
 
 CompanyApp
-    .controller('@@Model.Name@@Ctrl', ['$scope', '$http', '$location', '$routeParams', function ($scope, $http, $location, $routeParams) {
+    .controller('@@Model.Name@@Ctrl', ['$scope', '$http', '$location', '$stateParams', '$state', function ($scope, $http, $location, $stateParams, $state) {
         $scope.@@Table.Name@@List = [];
         $scope.states = { showAdddFrom: false };
 
@@ -32,14 +10,14 @@ CompanyApp
             $scope.current@@Model.Name@@ = null;
         }
 
-        if ($routeParams.id) {
+        if ($stateParams.Id) {
             //$http.get('/@@Model.Name@@/Get').success(function (data) {
             //    $scope.current@@Model.Name@@ = data;
             //});
             $http({
                 url: '/@@Model.Name@@/Get',
                 method: "GET",
-                params: { id: $routeParams.id }
+                params: { id: $stateParams.Id }
             }).success(function (data) {
                 $scope.current@@Model.Name@@ = data;
             });
@@ -48,7 +26,12 @@ CompanyApp
         $scope.sortType = 'name'; // set the default sort type
         $scope.sortReverse = false;  // set the default sort order
         $scope.searchKeyword = '';     // set the default 
-
+		
+        $scope.total = 0;
+        $scope.pageSize = globalPagingPageSize; 
+        $scope.pagination = {
+            current: 1
+        };
 
         $scope.errors = {};
 
@@ -77,27 +60,22 @@ CompanyApp
         };
 
 
-        $scope.getList = function () {
-            $http.get('/@@Model.Name@@/GetList').success(function (data) {
-                $scope.@@Model.Name@@List = data;
-            });
-        }
 
         $scope.showAdd@@Model.Name@@Form = function (showForm) {
             $scope.states.showAdddFrom = showForm;
             if (showForm) {
-                $location.path('/add');
+                $state.go("app.@@Model.Name@@Edit", "");
             } else {
-                $location.path('/list');
+                $state.go('app.@@Table.Name@@List', '');
             }
         }
 
 
-        $scope.Edit@@Model.Name@@ = function (customer) {
+        $scope.Edit@@Model.Name@@ = function (v@@Model.Name@@) {
             //debugger;
-            $scope.current@@Model.Name@@ = customer;
-            //$location.path('/add/');
-            $location.path('/add/').search({ id: @@Model.Name@@.Id });
+            $scope.current@@Model.Name@@ = v@@Model.Name@@;
+            //$location.path('/add/').search({ id: current@@Model.Name@@.Id });
+            $state.go("app.@@Model.Name@@Edit", { "Id": v@@Model.Name@@.Id });
         }
 
         $scope.save@@Model.Name@@ = function () {
@@ -122,6 +100,29 @@ CompanyApp
                 $scope.@@Table.Name@@List = data;
             });
         }
+
+
+		
+		$scope.pageChanged = function(newPage) {
+			getResultsPage(newPage);
+		};
+
+		function getResultsPage(pageNumber) {
+			$http.get('/@@Model.Name@@/GetList?page=' + pageNumber +'&keyword=' + $scope.searchKeyword).success(function (data) {
+				$scope.@@Table.Name@@List = data.@@Table.Name@@List;
+				$scope.total = data.Total;
+			});
+		}
+	
+        $scope.getList = function () {
+            getResultsPage(1);
+        }
+
+		
+        $scope.search = function () {
+            getResultsPage(1);
+        }
+
 
 
     }]);

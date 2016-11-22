@@ -35,8 +35,9 @@
             this.Tabs = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.RequiredValidation = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.LenghtValidation = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.RelationTable = new System.Windows.Forms.DataGridViewComboBoxColumn();
+            this.RTable = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.DisplayColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ValueColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.DisplayType = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.label1 = new System.Windows.Forms.Label();
@@ -57,6 +58,7 @@
             // 
             // dataGridView1
             // 
+            this.dataGridView1.AllowUserToAddRows = false;
             this.dataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
@@ -68,8 +70,9 @@
             this.Tabs,
             this.RequiredValidation,
             this.LenghtValidation,
-            this.RelationTable,
+            this.RTable,
             this.DisplayColumn,
+            this.ValueColumn,
             this.DisplayType});
             this.dataGridView1.Location = new System.Drawing.Point(-1, 46);
             this.dataGridView1.Name = "dataGridView1";
@@ -106,10 +109,10 @@
             this.LenghtValidation.HeaderText = "LValidation";
             this.LenghtValidation.Name = "LenghtValidation";
             // 
-            // RelationTable
+            // RTable
             // 
-            this.RelationTable.HeaderText = "RTable";
-            this.RelationTable.Name = "RelationTable";
+            this.RTable.HeaderText = "RTable";
+            this.RTable.Name = "RTable";
             // 
             // DisplayColumn
             // 
@@ -117,6 +120,11 @@
             this.DisplayColumn.Name = "DisplayColumn";
             this.DisplayColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
             this.DisplayColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // ValueColumn
+            // 
+            this.ValueColumn.HeaderText = "ValueColumn";
+            this.ValueColumn.Name = "ValueColumn";
             // 
             // DisplayType
             // 
@@ -307,20 +315,21 @@
         private System.Windows.Forms.ComboBox comboBox2;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.CheckedListBox checkedListBox1;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button button7;
         private System.Windows.Forms.DataGridViewTextBoxColumn Field;
         private System.Windows.Forms.DataGridViewTextBoxColumn DataType;
         private System.Windows.Forms.DataGridViewCheckBoxColumn Include;
         private System.Windows.Forms.DataGridViewTextBoxColumn Tabs;
         private System.Windows.Forms.DataGridViewCheckBoxColumn RequiredValidation;
         private System.Windows.Forms.DataGridViewTextBoxColumn LenghtValidation;
-        private System.Windows.Forms.DataGridViewComboBoxColumn RelationTable;
+        private System.Windows.Forms.DataGridViewComboBoxColumn RTable;
         private System.Windows.Forms.DataGridViewTextBoxColumn DisplayColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn ValueColumn;
         private System.Windows.Forms.DataGridViewComboBoxColumn DisplayType;
-        private System.Windows.Forms.Button button6;
-        private System.Windows.Forms.CheckedListBox checkedListBox1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Button button7;
     }
 }
 

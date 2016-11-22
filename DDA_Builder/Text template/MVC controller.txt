@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Web.Mvc;
 using CRMP.Models;
 using CRMP.Web.Helpers;
+using System.Linq;
+using CRMP.Utilities;
 
 namespace CRMP.Web.Controllers
 {
@@ -19,41 +21,29 @@ namespace CRMP.Web.Controllers
         // GET: @@Table.Name@@
         public ActionResult Index()
         {
-            var list = administrationComponent.Get@@Table.Name@@List();
-
-            return View(list);
+            return View();
         }        
-
-        public ActionResult SearchCompanies(string keyword)
+		
+		
+        public ActionResult List()
         {
-            var list = administrationComponent.Search@@Table.Name@@(keyword);
-
-            return PartialView("@@Table.Name@@List",list);
+            return View();
         }
 
 
-        public ActionResult GetList(string keyword)
+        public ActionResult GetList(string keyword, int page)
         {
-            var list = administrationComponent.Search@@Table.Name@@(keyword);
+            int total = 0;
+            var list = administrationComponent.Search@@Table.Name@@(keyword, page, Constants.PageSize, out total, true);
 
-            return Json(list, JsonRequestBehavior.AllowGet);
+            return Json(new { @@Table.Name@@List = list, Total = total }, JsonRequestBehavior.AllowGet);
         }
 
-
-
-        public ActionResult Add(int? id)
+		
+        public ActionResult AddForm()
         {
-            if (id.HasValue)
-            {
-                var @@Table.Name@@= administrationComponent.Get@@Model.Name@@(id.Value);
-                return View(@@Table.Name@@);
-            }
-            else
-                return View();
+            return View();
         }
-
-       // @OtherTablesLookup
-
 
         [HttpPost]
         public ActionResult Delete(int id)
@@ -67,37 +57,15 @@ namespace CRMP.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                //throw new Exception();
                 return JsonFormResponse();
             }
             
-            try
-            {
+            model.CompanyId = 7;
+           
                 administrationComponent.Save@@Model.Name@@(model);
-            }
-            catch (DbEntityValidationException e)
-            {
-                foreach (var eve in e.EntityValidationErrors)
-                {
-                    Console.WriteLine("Entity of type \"{0}\" in state \"{1}\" has the following validation errors:",
-                        eve.Entry.Entity.GetType().Name, eve.Entry.State);
-                    foreach (var ve in eve.ValidationErrors)
-                    {
-                        Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
-                            ve.PropertyName, ve.ErrorMessage);
-                    }
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            // return Json(company, JsonRequestBehavior.AllowGet);
+           
             return JsonFormResponse();
         }
-
-
 
 
 
@@ -108,5 +76,21 @@ namespace CRMP.Web.Controllers
             var @@Table.Name@@= administrationComponent.Get@@Model.Name@@(id);
             return Json(@@Table.Name@@, JsonRequestBehavior.AllowGet);
         }
+
+		public ActionResult GetLookupLists()
+        {
+
+		@@Loop%Rtable%Table.Rtable!=null%var $$Rtable$$List = administrationComponent.Get$$Rtable$$Lookup();@@
+
+
+            return Json(new
+            {
+					@@Loop%Rtable%Table.Rtable!=null%     $$Rtable$$GroupList = $$Rtable$$GroupList,@@
+
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+
+
     }
 }
