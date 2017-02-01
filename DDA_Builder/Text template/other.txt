@@ -1,0 +1,27 @@
+﻿
+//side bar
+
+      {
+        "text": " @Model.Name ",
+        "sref": "app.@(Model.TableName)List",
+        "icon": "icon-docs",
+
+        "label": "label label-success"
+      }
+
+
+// routes
+
+
+                            .state('app@("."+Model.TableName)List', {
+                                url: '/@(Model.Name)/',
+
+                                title: 'Customer groups',
+                                templateUrl: helper.basepath('@(Model.Name+"/L")ist'),
+                            })
+                .state('app.@(Model.Name)Edit', {
+                    url: '/@(Model.Name)Edit/?Idd=:Id',
+
+                    title: '@(Model.Name) Edit',
+                    templateUrl: helper.basepath('@(Model.Name+"/Add")Form')
+                })

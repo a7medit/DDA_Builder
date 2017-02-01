@@ -10,7 +10,7 @@
             <toaster-container  toaster-options="{'position-class': 'toast-bottom-right', 'close-button':true}"></toaster-container>
             <!-- START button group-->
             <div class="col-md-2 col-md-offset-10">
-                <label|>items per page</label|>
+                <label|>{{'General.items_per_page' | translate }}</label|>
                 <div uib-dropdown="dropdown" class="btn-group">
                     <button uib-dropdown-toggle="" class="btn btn-default">
                         {{pageSize==0?"ALL":pageSize}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b class="caret"></b>
@@ -26,7 +26,7 @@
                             <a ng-click="pageSize = 100; getList();">100</a>
                         </li>
                         <li>
-                            <a ng-click="pageSize = 0; getList();">ALL</a>
+                            <a ng-click="pageSize = 0; getList();">{{'General.all' | translate}}</a>
                         </li>
                     </ul>
                 </div>

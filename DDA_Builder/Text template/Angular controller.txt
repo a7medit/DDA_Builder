@@ -2,24 +2,76 @@
 
 
 CompanyApp
-    .controller('@@Model.Name@@Ctrl', ['$scope', '$http', '$location', '$stateParams', '$state', function ($scope, $http, $location, $stateParams, $state) {
-        $scope.@@Table.Name@@List = [];
+    .controller('@(Model.Name+"Ctrl")', ['toaster','$scope', '$http', '$location', '$stateParams', '$state', function (toaster,$scope, $http, $location, $stateParams, $state) {
+        $scope.@(Model.TableName+"List") = [];
+		$scope.Searching = true;
+        $scope.ItemsToDelete = false;
+        $scope.loaded = true;
         $scope.states = { showAdddFrom: false };
 
-        if ($scope.current@@Model.Name@@ === undefined) {
-            $scope.current@@Model.Name@@ = null;
+
+
+
+		        $scope.CheckAll = function (datacheck) {
+            angular.forEach($scope.@(Model.TableName+"List"),
+function (data) {
+    data.Checked = datacheck;
+}
+);
+   $scope.ItemsToDelete = datacheck;
+        }
+
+        $scope.ItemChecked = function () {
+
+            $scope.checked = false;
+            angular.forEach($scope.@(Model.TableName+"List"),
+function (data) {
+
+    if (data.Checked != "undefined" && data.Checked) {
+        $scope.checked = true;
+    }
+}
+);
+            $scope.ItemsToDelete = $scope.checked;
+        }
+        $scope.pop = function (type, title, text) {
+
+            toaster.pop(type, title, text);
+        }
+
+
+        $scope.init = function () {
+            $http.get('/@(Model.Name)/GetLookupLists').success(function (data) {
+              
+@foreach (var item in @Model.TableDefination.Rows)
+{
+if (!String.IsNullOrEmpty(item["Rtable"].ToString()) )
+{
+ @("$scope."+item["Rtable"]+"GroupList = "+"data."+item["Rtable"]+"GroupList,")
+}
+
+}
+ });
+        }
+
+
+
+
+
+        if ($scope.current@(Model.Name) === undefined) {
+            $scope.current@(Model.Name) = null;
         }
 
         if ($stateParams.Id) {
-            //$http.get('/@@Model.Name@@/Get').success(function (data) {
-            //    $scope.current@@Model.Name@@ = data;
+            //$http.get('/@(Model.Name+"/")Get').success(function (data) {
+            //    $scope.current@(Model.Name) = data;
             //});
             $http({
-                url: '/@@Model.Name@@/Get',
+                url: '/@(Model.Name+"/")Get',
                 method: "GET",
                 params: { id: $stateParams.Id }
             }).success(function (data) {
-                $scope.current@@Model.Name@@ = data;
+                $scope.current@(Model.Name) = data;
             });
         }
 
@@ -61,43 +113,80 @@ CompanyApp
 
 
 
-        $scope.showAdd@@Model.Name@@Form = function (showForm) {
+        $scope.showAdd@(Model.Name)Form = function (showForm) {
             $scope.states.showAdddFrom = showForm;
             if (showForm) {
-                $state.go("app.@@Model.Name@@Edit", "");
+                $state.go("app.@(Model.Name+"Edit")", "");
             } else {
-                $state.go('app.@@Table.Name@@List', '');
+                $state.go('app.@(Model.TableName+"List")', '');
             }
         }
 
 
-        $scope.Edit@@Model.Name@@ = function (v@@Model.Name@@) {
+        $scope.Edit@(Model.Name) = function (v@(Model.Name)) {
             //debugger;
-            $scope.current@@Model.Name@@ = v@@Model.Name@@;
-            //$location.path('/add/').search({ id: current@@Model.Name@@.Id });
-            $state.go("app.@@Model.Name@@Edit", { "Id": v@@Model.Name@@.Id });
+            @("$scope.current"+Model.Name+" =") v@(Model.Name);
+			@("$state.go('app."+Model.Name+"Edit'  , { 'Id': v"+Model.Name+".Id });")
         }
 
-        $scope.save@@Model.Name@@ = function () {
-            $http.post('/@@Model.Name@@/Save@@Model.Name@@', $scope.current@@Model.Name@@).success(function (data) {
-                $scope.@@Table.Name@@List.push(data);
-                $scope.showAdd@@Model.Name@@Form(false);
+        $scope.save@(Model.Name) = function () {
+            $http.post('/@(Model.Name+"/")Save@(Model.Name)', $scope.current@(Model.Name+").")success(function (data) {
+                $scope.@(Model.TableName+"List").push(data);
+                $scope.showAdd@(Model.Name)Form(false);
             }).error(function(data, status, headers, config) {
                 $scope.handleErrors(data);
             });
         }
 
 
-        $scope.delete@@Model.Name@@ = function (index, id) {
-            $http.post('/@@Model.Name@@/Delete', { id: id }).success(function (data) {
-                $scope.@@Table.Name@@List.splice(index);
+        $scope.delete@(Model.Name) = function (index, id) {
+            $http.post('/@(Model.Name+"/")Delete', { id: id }).success(function (data) {
+                $scope.@(Model.TableName+"List").splice(index);
             });
         }
 
 
+		        $scope.delete@(Model.TableName) = function (index, id) {
+            var cars = "";
+            angular.forEach($scope.@(Model.TableName+"List"),
+function (data) {
+
+    if (data.Checked != "undefined" && data.Checked) {
+        cars += data.Id+"|"
+    }
+}
+);
+
+            $http.post('/@(Model.Name+"/")DeleteAll', { ids: cars }).success(function (data) {
+       
+                if (data.Success.length) {
+                    $scope.pop('success', 'Succesfully deleted', angular.toJson(data.Success));
+
+                    angular.forEach($scope.@(Model.TableName)List,
+function (@(Model.Name)data, index) {
+
+    if (angular.toJson(data.Success).indexOf('@(Model.Name) Id: ' + @(Model.Name)data.Id) != -1)
+    {
+        $scope.@(Model.TableName)List.splice(index);
+    }
+}
+);
+
+                }
+                else if (data.faile.length)
+                    $scope.pop('error', 'failed to delete', angular.toJson(data.faile));
+             
+                $scope.ItemChecked();
+            });
+          
+        }
+
+
+
+
         $scope.search = function () {
-            $http.get('/@@Model.Name@@/GetList?keyword=' + $scope.searchKeyword).success(function (data) {
-                $scope.@@Table.Name@@List = data;
+            $http.get('/@(Model.Name+"/")GetList?keyword=' + $scope.searchKeyword).success(function (data) {
+                $scope.@(Model.TableName+"List") = data;
             });
         }
 
@@ -108,9 +197,10 @@ CompanyApp
 		};
 
 		function getResultsPage(pageNumber) {
-			$http.get('/@@Model.Name@@/GetList?page=' + pageNumber +'&keyword=' + $scope.searchKeyword).success(function (data) {
-				$scope.@@Table.Name@@List = data.@@Table.Name@@List;
+			$http.get('/@(Model.Name+"/")GetList?page=' + pageNumber +'&keyword=' + $scope.searchKeyword).success(function (data) {
+				$scope.@(Model.TableName+"List") = data.@(Model.TableName+"List");
 				$scope.total = data.Total;
+				$scope.loaded = false;
 			});
 		}
 	

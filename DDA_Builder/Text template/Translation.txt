@@ -1,0 +1,11 @@
+﻿
+  "@(Model.TableName)": {
+
+@foreach (var item in @Model.TableDefination.Rows)
+{
+
+    @(@"""" + item["Field"] + @""" : """",")      @("{{ '"+Model.TableName+"."+item["Field"]+"' | translate }}"+ System.Environment.NewLine)
+}
+
+  },
+

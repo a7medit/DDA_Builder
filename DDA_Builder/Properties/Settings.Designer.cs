@@ -46,5 +46,16 @@ namespace DDA_Builder.Properties {
                 this["ApplicationPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection ProjectList {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["ProjectList"]));
+            }
+            set {
+                this["ProjectList"] = value;
+            }
+        }
     }
 }

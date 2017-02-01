@@ -13,12 +13,12 @@ namespace CRMP.Web.Controllers
 
 
 
-    public class @@Model.Name@@Controller : BaseController
+    public class @(Model.Name+"Controller") : BaseController
     {
         AdministrationComponent administrationComponent = new AdministrationComponent();
 
 
-        // GET: @@Table.Name@@
+        // GET: @Model.TableName
         public ActionResult Index()
         {
             return View();
@@ -34,9 +34,9 @@ namespace CRMP.Web.Controllers
         public ActionResult GetList(string keyword, int page)
         {
             int total = 0;
-            var list = administrationComponent.Search@@Table.Name@@(keyword, page, Constants.PageSize, out total, true);
+            var list = administrationComponent.Search@(Model.TableName+"(")keyword, page, Constants.PageSize, out total, true);
 
-            return Json(new { @@Table.Name@@List = list, Total = total }, JsonRequestBehavior.AllowGet);
+            return Json(new { @(Model.TableName+"List") = list, Total = total }, JsonRequestBehavior.AllowGet);
         }
 
 		
@@ -48,21 +48,31 @@ namespace CRMP.Web.Controllers
         [HttpPost]
         public ActionResult Delete(int id)
         {
-             administrationComponent.Delete@@Model.Name@@(id);
+             administrationComponent.Delete@(Model.Name+"(id);")
             return Json("success", JsonRequestBehavior.AllowGet);
         }
 
+		[HttpPost]
+        public ActionResult DeleteAll(string ids)
+        {
+            List<string> output = administrationComponent.Delete@(Model.TableName)(ids);
+            List<string> deleted = output.FindAll(s => s.Contains("deleted"));
+            List<string> fail = output.FindAll(s => s.Contains("failed"));
+            return Json(new { Success = deleted, faile = fail }, JsonRequestBehavior.AllowGet);
+        }
+
+
         [HttpPost]
-        public ActionResult Save@@Model.Name@@(@@Model.Name@@ViewModel model)
+        public ActionResult Save@(Model.Name+"(")@(Model.Name+"ViewModel model)")
         {
             if (!ModelState.IsValid)
             {
                 return JsonFormResponse();
             }
             
-            model.CompanyId = 7;
+            model.CompanyId = CurrentCompanyId;
            
-                administrationComponent.Save@@Model.Name@@(model);
+                administrationComponent.Save@(Model.Name+"(model);")
            
             return JsonFormResponse();
         }
@@ -73,24 +83,42 @@ namespace CRMP.Web.Controllers
         {
             //var company = administrationComponent.GetCompanyById(id);
 
-            var @@Table.Name@@= administrationComponent.Get@@Model.Name@@(id);
-            return Json(@@Table.Name@@, JsonRequestBehavior.AllowGet);
+            var @Model.TableName = administrationComponent.Get@(Model.Name+"(id);")
+            return Json(@(Model.TableName+",") JsonRequestBehavior.AllowGet);
         }
 
 		public ActionResult GetLookupLists()
         {
+@{
+List<String> groups = new List<String>();
+		foreach (var item in @Model.TableDefination.Rows)
+{
 
-		@@Loop%Rtable%Table.Rtable!=null%var $$Rtable$$List = administrationComponent.Get$$Rtable$$Lookup();@@
+if (!groups.Contains(item["Rtable"].ToString()) && !String.IsNullOrEmpty(item["Rtable"].ToString()) )
+    {
 
+	groups.Add(item["Rtable"].ToString());
+ @("var "+item["Rtable"]+"List = administrationComponent.Get"+item["Rtable"]+@"Lookup();")
+    }  
+ }
+ }
 
             return Json(new
             {
-					@@Loop%Rtable%Table.Rtable!=null%     $$Rtable$$GroupList = $$Rtable$$GroupList,@@
+			@{ groups.Clear();
+					foreach (var item in @Model.TableDefination.Rows)
+{
 
-            }, JsonRequestBehavior.AllowGet);
-        }
-
-
-
+if (!groups.Contains(item["Rtable"].ToString())&&!String.IsNullOrEmpty(item["Rtable"].ToString()) )
+    {
+	groups.Add(item["Rtable"].ToString());
+ @(item["Rtable"]+"GroupList = "+item["Rtable"]+"List,")
     }
+ }
+
+            @("},"+"JsonRequestBehavior.AllowGet);")
+        }
+	
+}
+}
 }

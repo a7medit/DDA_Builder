@@ -5,11 +5,22 @@ using System;
 namespace CRMP.Models
 {
 
-    public class @@Model.Name@@ViewModel
+    public class @(Model.Name+ "ViewModel")
     {
 
+	@foreach (var item in @Model.TableDefination.Rows)
+{
 
-@@Loop%Field%Table.Include=True% public $$Field.Type$$ $$Field$$ { get; set; } @@
+	 @("public "+item["DataType"]+" ") @(item["Field"]+" { get; set; } "+"\n")
+			if (!String.IsNullOrEmpty(item["Rtable"].ToString()) )
+			{
+			 @("public string ") @(item["Field"]+"_"+item["Rtable"]+item["Displaycolumn"]+" { get; set; } "+"\n")
+			}
+
+
+	
+	
+}  
 
 
     }

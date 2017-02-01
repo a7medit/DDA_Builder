@@ -1,87 +1,135 @@
-        #region @@Model.Name@@
+        #region @Model.Name
 
-     public void Save@@Model.Name@@(@@Model.Name@@ViewModel @@Model.Name@@ViewModel)
+     public void @("Save"+Model.Name) (@(Model.Name+ "ViewModel") @(Model.Name+ "ViewModel"))
         {
             CRMPContext context = new CRMPContext();
-            @@Model.Name@@ _@@Model.Name@@;
-            bool isNew = @@Model.Name@@ViewModel.Id == 0;
+            @Model.Name _@Model.Name;
+            bool isNew = @(Model.Name+"ViewModel.Id") == 0;
             if (!isNew)
             {
-                _@@Model.Name@@ = context.@@Table.Name@@.FirstOrDefault(x => x.Id == @@Model.Name@@ViewModel.Id) ?? new @@Model.Name@@();
-                //_@@Model.Name@@.CompanyWholesalerTypes.Clear();
+                _@Model.Name = context.@(Model.TableName+".")FirstOrDefault(x => x.Id == @(Model.Name+"ViewModel.Id")) ?? new @(Model.Name+"("));
+  
             }
             else
             {
-                _@@Model.Name@@ = new @@Model.Name@@();
+                _@Model.Name = new @(Model.Name+"()");
             }
 
 // add loop
 
-@@Loop%Field%Table.Include=True%  _@@Model.Name@@.$$Field$$ = @@Model.Name@@ViewModel.$$Field$$;@@
+@foreach (var item in @Model.TableDefination.Rows)
+{
 
-            _@@Model.Name@@.IsActive = true;
-            _@@Model.Name@@= 0;
-            _@@Model.Name@@.CreatedAT = DateTime.Today.Date;
-            _@@Model.Name@@.ModifiedAt = DateTime.Today.Date;
+
+	@("_"+Model.Name+".")@(item["Field"]+"=")  @(Model.Name+"ViewModel.")@(item["Field"]+"; \n")
+    
+} 
+
+            _@(Model.Name+".")IsActive = true;
+            _@(Model.Name+".")CreatedAT = DateTime.Today.Date;
+            _@(Model.Name+".")ModifiedAt = DateTime.Today.Date;
 
             if (isNew)
             {
-                context.@@Table.Name@@.Add(_@@Model.Name@@);
+                context.@(Model.TableName+".")Add(_@Model.Name);
             }
             else
             {
-                context.Entry(_@@Model.Name@@).State = EntityState.Modified;
+                context.Entry(_@Model.Name).State = EntityState.Modified;
             }
             context.SaveChanges();
         }
 
-        public @@Model.Name@@ViewModel Get@@Model.Name@@(int @@Model.Name@@Id)
+        public @(Model.Name+"ViewModel") Get@(Model.Name+"(")int @(Model.Name+"Id"))
         {
             CRMPContext context = new CRMPContext();
-            var _@@Model.Name@@ = context.@@Table.Name@@.SingleOrDefault(d => d.Id == @@Model.Name@@Id);
+            var _@Model.Name = context.@(Model.TableName+".")SingleOrDefault(d => d.Id == @(Model.Name+"Id"));
 
-            @@Model.Name@@ViewModel _@@Model.Name@@viewmpde = new @@Model.Name@@ViewModel()
+            @(Model.Name+"ViewModel") _@(Model.Name+"viewmpde") = new @(Model.Name+"ViewModel()")
             {
 
-@@Loop%Field%Table.Include=True%  $$Field$$ = _@@Model.Name@@.$$Field$$,@@
+
+@foreach (var item in @Model.TableDefination.Rows)
+{
+
+
+	@(item["Field"]+"=")  @("_"+Model.Name+".")@(item["Field"]+",")
+    
+ } 
+
             };
 
 
-            return _@@Model.Name@@viewmpde;
+            return _@(Model.Name+"viewmpde;")
         }
 
-        public List<@@Model.Name@@> Get@@Table.Name@@List()
+        public List<@Model.Name> Get@(Model.TableName+"List()")
         {
             CRMPContext context = new CRMPContext();
-            return context.@@Table.Name@@.ToList();
+            return context.@(Model.TableName+".ToList();")
         }
 
 
-        public List<@@Model.Name@@ViewModel> Search@@Table.Name@@(string keyword,int page, int pageSize,out int total, bool isActive)
+
+
+
+
+
+
+
+
+		
+
+		
+        public List<@(Model.Name+"ViewModel >")  Search@(Model.TableName+"(") string keyword,int page, int pageSize,out int total, bool isActive)
         {
             CRMPContext context = new CRMPContext();
-            var result = context.@@Table.Name@@.Where(c=> c.IsActive == isActive).AsQueryable();
+            var result = context.@(Model.TableName+".")Where(c=> c.IsActive == isActive).AsQueryable();
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                result = result.Where(c => c.Name.Contains(keyword) ||
-                c.Email.Contains(keyword));
+                result = result.Where(c => c.Name.Contains(keyword));
             }
             total = result.Count();
             var test = result.Select(x => new
             {
-                @@Loop%Field%Table.Include=True%  x.$$Field$$,@@
-            }).ToList().Select(x => new @@Model.Name@@ViewModel
+
+			@foreach (var item in @Model.TableDefination.Rows)
+{
+
+
+	@("x."+item["Field"]+",")
+	if (!String.IsNullOrEmpty(item["Rtable"].ToString()) )
+	{
+	@(item["Field"]+"_"+item["Rtable"]+item["Displaycolumn"]+"=")  @("x."+item["RModel"]+"."+item["Displaycolumn"]+",")
+	}
+    }
+ 
+
+ 
+            }).ToList().Select(x => new @(Model.Name+"ViewModel")
             {
-                @@Loop%Field%Table.Include=True%  $$Field$$ = x.$$Field$$,@@
+						@foreach (var item in @Model.TableDefination.Rows)
+{
+
+
+		if (!String.IsNullOrEmpty(item["Rtable"].ToString()) )
+		{
+		@(item["Field"]+"_"+item["Rtable"]+item["Displaycolumn"]+" = ") @("x."+item["Rtable"]+item["Displaycolumn"]+",")
+		 }
+			@(item["Field"]+"=") @("x."+item["Field"]+",") 
+		
+    }
+ 
+
             }).Skip((page - 1) * pageSize).Take(pageSize).ToList();
             return test;//result.ToList();
         }
 
-        public void Delete@@Model.Name@@(int @@Model.Name@@Id)
+        public void Delete@(Model.Name+"(") int @(Model.Name+"Id)")
         {
             CRMPContext context = new CRMPContext();
-            var _@@Model.Name@@ = context.@@Table.Name@@.FirstOrDefault(x => x.Id == @@Model.Name@@Id);
-            context.@@Table.Name@@.Remove(_@@Model.Name@@);
+            var _@Model.Name = context.@(Model.TableName+".")FirstOrDefault(x => x.Id == @(Model.Name+"Id"));
+            context.@(Model.TableName+".")Remove(_@Model.Name);
             try
             {
                 context.SaveChanges();
@@ -91,36 +139,105 @@
         }
 
 
-        public @@Model.Name@@ViewModel Get@@Model.Name@@ById(int @@Model.Name@@Id)
+		public List<string> Delete@(Model.TableName)(string CustIds)
         {
             CRMPContext context = new CRMPContext();
-            var result = context.@@Table.Name@@.AsQueryable();
-            var _@@Model.Name@@ = result.Select(x => new
+            List<int> Ids = CustIds.Substring(0, CustIds.Count() - 1).Split('|').Select(Int32.Parse).ToList();
+            List<string> output = new List<string>();
+            var _Items = context.@(Model.TableName).Where(x => Ids.Contains(x.Id)).ToList();
+            foreach (var item in _Items)
             {
-        @@Loop%Field%Table.Include=True%  x.$$Field$$,@@
-            }).Where(x => x.Id == @@Model.Name@@Id).ToList().Select(x => new @@Model.Name@@ViewModel
-            {
-       @@Loop%Field%Table.Include=True%  $$Field$$ = x.$$Field$$,@@
-            }).FirstOrDefault();
-            return _@@Model.Name@@ ;//result.ToList();
+                context.@(Model.TableName).Remove(item);
+                try
+                {
+                    context.SaveChanges();
+                    output.Add("@(Model.Name) Id: " + item.Id + " deleted ");
+
+                }
+                catch (Exception ex)
+                {
+                    output.Add("@(Model.Name) Id: " + item.Id + " failed to delete ");
+                    Console.Write(ex.Message);
+                }
+            }
+            return output;
         }
 
 
 
-			@@Loop%Rtable%Table.Rtable!=null% 		 public List<LookupItemViewModel> Get$$Rtable$$Lookup()
+
+
+
+
+        public @(Model.Name+"ViewModel") Get@(Model.Name+"ById") (int @(Model.Name+"Id)")
         {
             CRMPContext context = new CRMPContext();
-            return context.$$Rtable$$.Where(pg =>
+            var result = context.@(Model.TableName+".")AsQueryable();
+            var _@Model.Name = result.Select(x => new
+            {
+@foreach (var item in @Model.TableDefination.Rows)
+{
+
+if (@item["include"] == "true")
+    {
+	 @("x."+item["Field"]+",")
+    }
+ }
+
+
+            }).Where(x => x.Id == @(Model.Name+"Id")).ToList().Select(x => new @(Model.Name+"ViewModel")
+            {
+@foreach (var item in @Model.TableDefination.Rows)
+{
+
+if (@item["include"] == "true")
+    {
+
+ @(item["Field"]+" = x."+@item["Field"]+",")
+    }
+ }
+            }).FirstOrDefault();
+            return _@(Model.Name) ;//result.ToList();
+        }
+
+@{
+List<String> groups = new List<String>();
+		foreach (var item in @Model.TableDefination.Rows)
+{
+
+if (!groups.Contains(item["Rtable"].ToString()) && !String.IsNullOrEmpty(item["Rtable"].ToString()) )
+    {
+		groups.Add(item["Rtable"].ToString());
+ var d = @"public List<LookupItemViewModel> Get"+item["Rtable"]+@"Lookup()
+        {
+            CRMPContext context = new CRMPContext();
+            return context."+item["Rtable"]+@".Where(pg =>
             pg.IsActive).Select(d => new { d.Id, d.Name }).ToList().Select(x =>
             new LookupItemViewModel
             {
                 Id = x.Id,
                 Name = x.Name
             }).ToList();
-        } @@
+        }  ";
+
+		@(d+"\n")
+
+    }
+	}
+ }
+
+
+		
 
 
 
 
 
 		        #endregion
+
+
+
+
+
+
+

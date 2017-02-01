@@ -15,41 +15,54 @@ using RazorEngine;
 using RazorEngine.Templating;
 using RazorEngine.Compilation.ReferenceResolver;
 using RazorEngine.Configuration;
+using RazorEngine.Text;
 
 namespace DDA_Builder
 {
     public partial class Form1 : Form
     {
+       public static string DDAProjectLocation = "";
+        public static string DDAProjectName = "";
+      public static  DataSet ProjectSettingsds = new DataSet();
         public Form1()
         {
             InitializeComponent();
-
-            itwmslocations.Add("Angular ViewModel", @"CRMP.Models\@@Model.Name@@ViewModel.cs");
-            itwmslocations.Add("Administrator functions", "");
-            itwmslocations.Add("MVC controller", @"CRMP.Web\Controllers\@@Model.Name@@Controller.cs");
-            itwmslocations.Add("MVC view", @"CRMP.Web\Views\@@Model.Name@@\Index.cshtml");
-            itwmslocations.Add("List template", @"CRMP.Web\Views\@@Model.Name@@\List.cshtml");
-            itwmslocations.Add("Add template", @"CRMP.Web\Views\@@Model.Name@@\AddForm.cshtml");
-            itwmslocations.Add("Angular controller", @"CRMP.Web\App\\@@Model.Name@@\@@Model.Name@@Ctrl.js");
-
-            foreach (var item in itwmslocations)
-            {
-                int i = checkedListBox1.Items.Add(item.Key);
-                //checkedListBox1.SetItemCheckState(i, CheckState.Checked);
-            }
-
-
         }
+
 
         Dictionary<string, string> itwmslocations = new Dictionary<string, string>();
 
         List<string> Tables = new List<string>();
+        
         string textTemplate = "";
         private void Form1_Load(object sender, EventArgs e)
         {
+            Project.ProjectAddSelect project = new Project.ProjectAddSelect();
+            project.ShowDialog();
+            if (string.IsNullOrEmpty(project.Projectname) || string.IsNullOrEmpty(project.Project_Location))
+                System.Environment.Exit(0);
+            this.Text = project.Projectname;
+            DDAProjectLocation = project.Project_Location;
+            DDAProjectName = project.Projectname;
+            try
+            {
+                ProjectSettingsds.ReadXml(DDAProjectLocation + "\\" + "settings");
+                Loadtemplates(ProjectSettingsds.Tables["Settings"].Rows[0]["TemplateLocation"].ToString());
+                LoadTables(ProjectSettingsds.Tables["Settings"].Rows[0]["ConnectionString"].ToString());
+
+            }
+            catch(FileNotFoundException)
+            {
+                Project.Project_settings settingswindo = new Project.Project_settings();
+                    settingswindo.ShowDialog();
+                    }
             textBox1.Text = Properties.Settings.Default.ApplicationPath;
-            //get all templates
-            string TemplateFolder = AppDomain.CurrentDomain.BaseDirectory.ToString()+ @"Text template";
+         
+        }
+
+        void Loadtemplates(string TemplatesLocation)
+        {
+            string TemplateFolder = AppDomain.CurrentDomain.BaseDirectory.ToString() + @"Text template";
             DirectoryInfo d = new DirectoryInfo(TemplateFolder);//Assuming Test is your Folder
             FileInfo[] Files = d.GetFiles("*.txt"); //Getting Text files
             string str = "";
@@ -58,32 +71,42 @@ namespace DDA_Builder
                 comboBox2.Items.Add(file.Name);
             }
 
+            foreach (DataRow item in Form1.ProjectSettingsds.Tables["Templates"].Rows)
+            {
+                itwmslocations.Add(item["TemplateName"].ToString(), item["TemplatLocation"].ToString());
 
+            }
+            foreach (var item in itwmslocations)
+            {
+                int i = checkedListBox1.Items.Add(item.Key);
+            }
 
-            ConnectionForm f = new ConnectionForm();
-            f.ShowDialog();
+        }
 
-            SqlConnection con = new SqlConnection(Properties.Settings.Default.Connection);
-            SqlCommand com = new SqlCommand("SELECT table_name FROM information_schema.tables",con);
+        void LoadTables(string connectionString)
+        {
+
+            SqlConnection con = new SqlConnection(connectionString);
+            SqlCommand com = new SqlCommand("SELECT table_name FROM information_schema.tables", con);
             con.Open();
             SqlDataReader r = com.ExecuteReader(CommandBehavior.CloseConnection);
             while (r.Read())
             {
+                checkedListBox2.Items.Add(r[0].ToString());
                 Tables.Add(r[0].ToString());
 
-                comboBox1.Items.Add(r[0].ToString());
+                //checkedListBox2.Items.Add(r[0].ToString());
                 RTable.Items.Add(r[0].ToString());
             }
+            RTable.Items.Add("");
             con.Close();
-
         }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void checkedListBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
             dataGridView1.Rows.Clear();
-            SqlConnection con = new SqlConnection(Properties.Settings.Default.Connection);
+            SqlConnection con = new SqlConnection(ProjectSettingsds.Tables["Settings"].Rows[0]["ConnectionString"].ToString());
             SqlCommand com = new SqlCommand("SELECT c.name 'Column Name',t.Name 'Data type',c.max_length 'Max Length',c.is_nullable, ISNULL(i.is_primary_key, 0) 'Primary Key' FROM sys.columns c INNER JOIN sys.types t ON c.user_type_id = t.user_type_id LEFT OUTER JOIN sys.index_columns ic ON ic.object_id = c.object_id AND ic.column_id = c.column_id LEFT OUTER JOIN sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id WHERE c.object_id = OBJECT_ID(@tableName)", con);
-            com.Parameters.Add("tableName", SqlDbType.Text).Value = comboBox1.Text;
+            com.Parameters.Add("tableName", SqlDbType.Text).Value = checkedListBox2.Text;
             con.Open();
             SqlDataReader r = com.ExecuteReader(CommandBehavior.CloseConnection);
             while (r.Read())
@@ -96,11 +119,35 @@ namespace DDA_Builder
               
             }
             con.Close();
+            DataSet ds = new DataSet();
+            try
+            {
+                ds.ReadXml(checkedListBox2.Text);
+                for (int ro = 0; ro < ds.Tables[0].Rows.Count; ro++)
+                {
+                    for (int c = 0; c < ds.Tables[0].Columns.Count; c++)
+                    {
+                        if (ds.Tables[0].Columns[c].ColumnName == "DataType" || ds.Tables[0].Columns[c].ColumnName == "RModel")
+                            continue;
+                        dataGridView1.Rows[ro].Cells[ds.Tables[0].Columns[c].ColumnName].Value = ds.Tables[0].Rows[ro][c];
+
+                    }
+                    //dataGridView1[] 
+
+                }
+            }
+            catch(Exception ex) {
+                MessageBox.Show(ex.Message); }
+
+
+
+
+
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string Class = "    public class "+comboBox1.Text+"ViewModel {"+ System.Environment.NewLine;
+            string Class = "    public class "+checkedListBox2.Text+"ViewModel {"+ System.Environment.NewLine;
             foreach (DataGridViewRow datarowdata in dataGridView1.Rows)
             {
                 if(datarowdata.Cells[0].Value != null)
@@ -136,7 +183,7 @@ namespace DDA_Builder
 
         string CreateAddView(string SavePath)
         {
-            string Modelname = ModelName(comboBox1.Text);
+            string Modelname = ModelName(checkedListBox2.Text);
             Dictionary<string, string> tabs = new Dictionary<string, string>();
             bool hastabs = false;
             foreach (DataGridViewRow datarowdata in dataGridView1.Rows)
@@ -148,6 +195,13 @@ namespace DDA_Builder
             }
 
             string Class = "";
+            Class += @"@{
+    Layout = null;
+}";
+            Class += @"
+    <h3>
+        " + Modelname + @" Edit
+      </h3> ";
             if (hastabs)
             {
                 foreach (DataGridViewRow datarowdata in dataGridView1.Rows)
@@ -163,20 +217,20 @@ namespace DDA_Builder
                 foreach (DataGridViewRow datarowdata in dataGridView1.Rows)
                 {
                     var itemenabled = datarowdata.Cells[2]?.Value;
-                    if (itemenabled != null && (datarowdata.Cells[3].Value != null && !string.IsNullOrEmpty(datarowdata.Cells[3].Value.ToString()) && (bool)itemenabled))
+                    if (itemenabled != null && (datarowdata.Cells[3].Value != null && !string.IsNullOrEmpty(datarowdata.Cells[3].Value.ToString()) && Convert.ToBoolean(itemenabled)))
                     {
                         if (!tabs.ContainsKey(datarowdata.Cells[3].Value.ToString()))
                         {
                             if (first)
                             {
-                                Class += "<li class='active'><a data-toggle='tab' href data-target='#" + datarowdata.Cells[3].Value.ToString() + "'>" + datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
-                                tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='" + datarowdata.Cells[3].Value.ToString() + "' class='tab-pane fade in active'>");
+                                Class += "<li class='active'><a data-toggle='tab' href data-target='#" + datarowdata.Cells[3].Value.ToString().Trim() + "'>" + datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
+                                tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='" + datarowdata.Cells[3].Value.ToString().Trim() + "' class='tab-pane fade in active'>");
                                 first = false;
                             }
                             else
                             {
-                                Class += "<li><a data-toggle='tab' href data-target='#" + datarowdata.Cells[3].Value.ToString() + "'>" + datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
-                                tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='" + datarowdata.Cells[3].Value.ToString() + "' class='tab-pane fade'>");
+                                Class += "<li><a data-toggle='tab' href data-target='#" + datarowdata.Cells[3].Value.ToString().Trim() + "'>" + datarowdata.Cells[3].Value.ToString() + "</a></li>" + System.Environment.NewLine; ;
+                                tabs.Add(datarowdata.Cells[3].Value.ToString(), "<div id='" + datarowdata.Cells[3].Value.ToString().Trim() + "' class='tab-pane fade'>");
                             }
 
                         }
@@ -185,13 +239,7 @@ namespace DDA_Builder
                 Class += "</ul>" + System.Environment.NewLine;
 
             }
-            Class += @"@{
-    Layout = null;
-}";
             Class += @"
-    <h3>
-        " + Modelname + @" Edit
-      </h3> 
 <div ng-controller=' " + Modelname + @"Ctrl'>";
             Class += @"    <div class='row'>
         <div class='panel panel-default'>
@@ -202,13 +250,13 @@ namespace DDA_Builder
             Class += @"<div class='alert alert-error ng-cloak' ng-cloak ng-if='errors.formErrorsSummary.length > 0'><h4 > The following errors were found:</h4 ><ul ng-repeat = 'error in errors.formErrorsSummary' ><li class='ng-cloak'>{{error.Message}}</li></ul></div>" + System.Environment.NewLine;
 
             if (hastabs)
-                Class += "<div class='tab-content'>" + System.Environment.NewLine;
+                Class += "<div class='tab-content row'>" + System.Environment.NewLine;
 
             foreach (DataGridViewRow datarowdata in dataGridView1.Rows)
             {
                 if (datarowdata.Cells[2].Value != null && bool.Parse(datarowdata.Cells[2].Value.ToString()) == false)
                     continue;
-                if (datarowdata.Cells[0].Value != null && (bool)datarowdata.Cells[2].Value)
+                if (datarowdata.Cells[0].Value != null && Convert.ToBoolean(datarowdata.Cells[2].Value))
                 {
                     string item = "";
                     if (datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True")
@@ -233,12 +281,44 @@ namespace DDA_Builder
                                             </span>
                                         </p>"+ System.Environment.NewLine;
                     }
-                    else if (datarowdata.Cells[6].Value != null && datarowdata.Cells[7].Value != null)
+                    else if (datarowdata.Cells[1].Value.ToString() == "bit")
+                    {
+                        item += @"<div class=""checkbox c-checkbox needsclick input-group "">"
+                                +"<label class='needsclick'>"
+                                 + @"   <input class=""needsclick"" name='" + datarowdata.Cells[0].Value.ToString() + @"' id='" + datarowdata.Cells[0].Value.ToString() + @"'  type=""checkbox"" ng-checked='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() + "'  ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +"'  > "
+                                    +@"<span class=""fa fa-check""></span>"
+                                +"</label>"
+                            +"</div>" + System.Environment.NewLine;
+                    }
+                    else if ((datarowdata.Cells[6].Value != null || datarowdata.Cells[7].Value != null) && (!string.IsNullOrEmpty(datarowdata.Cells[6].Value.ToString()) || !string.IsNullOrEmpty(datarowdata.Cells[7].Value.ToString())))
                     {
                         item += " <select class='form-control' name='" + datarowdata.Cells[0].Value.ToString() + "' id='" + datarowdata.Cells[0].Value.ToString() + "' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
-         "' " + ((datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True") ? "required" : "") + "     " + ((datarowdata.Cells[5].Value != null && datarowdata.Cells[5].Value.ToString().Trim() != "") ? "maxlength=" + datarowdata.Cells[5].Value.ToString().Trim() + "  " : "") + @"  ng-options=""i." + ModelName(datarowdata.Cells[8].Value.ToString().Trim()) + @" as (i." + ModelName(datarowdata.Cells[7].Value.ToString().Trim()) + @") for i in " + ModelName(datarowdata.Cells[6].Value.ToString().Trim()) + @"List""  ><option></option> </select>" + System.Environment.NewLine;
+         "' " + ((datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True") ? "required" : "") + "     " + ((datarowdata.Cells[5].Value != null && datarowdata.Cells[5].Value.ToString().Trim() != "") ? "maxlength=" + datarowdata.Cells[5].Value.ToString().Trim() + "  " : "") + @"  ng-options=""i." + ModelName(datarowdata.Cells[8].Value.ToString().Trim()) + @" as (i." + ModelName(datarowdata.Cells[7].Value.ToString().Trim()) + @") for i in " + datarowdata.Cells[6].Value.ToString().Trim() + @"GroupList""  ><option></option> </select>" + System.Environment.NewLine;
                     }
+                    else if (datarowdata.Cells[6].Value == null && datarowdata.Cells[7].Value != null && !string.IsNullOrEmpty(datarowdata.Cells[7].Value.ToString()))
+                    {
+
+                        string[] options = datarowdata.Cells[7].Value.ToString().Replace('{', ' ').Replace('}', ' ').Split(',');
+                        string[] optionsValue = datarowdata.Cells[8].Value != null?datarowdata.Cells[8].Value.ToString().Replace('{', ' ').Replace('}', ' ').Split(','): new string[0];
+                        item += " <select class='form-control' name='" + datarowdata.Cells[0].Value.ToString() + "' id='" + datarowdata.Cells[0].Value.ToString() + "' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
+         "' " + ((datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True") ? "required" : "") + "     " + ((datarowdata.Cells[5].Value != null && datarowdata.Cells[5].Value.ToString().Trim() != "") ? "maxlength=" + datarowdata.Cells[5].Value.ToString().Trim() + "  " : "") + @"
+                >" + System.Environment.NewLine;
+
+                        string v = options[1];
+                        if(optionsValue.Count()> 0)
+                        for (int i = 0; i < options.Count(); i++)
+                        {
+                            item += @"<option  value="""+optionsValue[i].Trim()+@""">" + options[i].Trim() + "</option>" + Environment.NewLine;
+                        }
                         else
+                            for (int i = 0; i < options.Count(); i++)
+                            {
+                                item += @"<option>" + options[i].Trim() + "</option>" + Environment.NewLine;
+                            }
+
+                        item += "</select>";
+                    }
+                    else
                     item += " <input class='form-control' name='"+ datarowdata.Cells[0].Value.ToString() + "' id='" + datarowdata.Cells[0].Value.ToString() +"' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
                              "' " + ((datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True") ? "required" : "") + "     " + ((datarowdata.Cells[5].Value != null && datarowdata.Cells[5].Value.ToString().Trim() != "") ? "maxlength=" + datarowdata.Cells[5].Value.ToString().Trim() + "  " : "") + "    >" + System.Environment.NewLine;
 
@@ -278,9 +358,13 @@ namespace DDA_Builder
             if (hastabs)
                 Class += "</div>";
             Class += "</form>";
-            Class += "</div>";
-            Class += "    <button type='button' class='btn btn-primary' ng-click='save" + Modelname + "()' ng-disabled='CarForm.$invalid'>Add " + Modelname + "</button>";
-            Class += @"</div></div></div>";
+            Class += "</div>";                                                                             
+            Class += "    <button type='button' class='btn btn-primary' ng-click='save" + Modelname + "()' ng-disabled='" + Modelname + @"Form.$invalid'>Add " + Modelname + "</button>";
+            Class += @"   <button type = 'button' class='btn btn-primary' ng-click=""$state.go('app."+ checkedListBox2.Text + @"List','');"" ng-disabled='CarForm.$invalid'><i class=""fa fa-times"" /> Cancel</button>";
+
+        
+
+               Class += @"</div></div></div>";
             if (SavePath == "")
             {
                 ShowTextForm f = new ShowTextForm(Class);
@@ -311,17 +395,19 @@ namespace DDA_Builder
 
         private void button5_Click(object sender, EventArgs e)
         {
-
+            string _TableName = checkedListBox2.Text;
+            var d = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
+            string _ModelName = d.Singularize(_TableName);
             //string template = "Hello @Model.Tablename, < div ng - controller = '@Model.Name > ";
             DataTable data = GetDataTableFromDGV(dataGridView1);
-
+           // data.WriteXml(checkedListBox2.Text);
             var config = new TemplateServiceConfiguration();
             // .. configure your instance
             config.ReferenceResolver = new MyIReferenceResolver();
             Engine.Razor = RazorEngineService.Create(config);
 
             var result =
-                Engine.Razor.RunCompile(textTemplate, "templateKey",null, new  { Name = "Customer",TableName = "Customers",TableDefination = data });
+                Engine.Razor.RunCompile(textTemplate,_TableName+"Quickparse",null, new  { Name = _ModelName,TableName = _TableName,TableDefination = data });
             ShowTextForm f = new ShowTextForm(result);
 
             f.ShowDialog();
@@ -330,14 +416,33 @@ namespace DDA_Builder
         void parserWithcreateFile(string File,string location)
         {
             DataTable data = GetDataTableFromDGV(dataGridView1);
-            if (comboBox2.Items.Contains(File+ ".txt"))
+            data.WriteXml(checkedListBox2.Text);
+            if (comboBox2.Items.Contains(File))
             {
-                comboBox2.SelectedItem = File + ".txt";
-                Parser p = new Parser(comboBox1.Text, data, textTemplate);
-                string parsedtext = p.Parse();
+                comboBox2.SelectedItem = File ;
+                //Parser p = new Parser(checkedListBox2.Text, data, textTemplate);
+                //string parsedtext = p.Parse();
+
+
+                string _TableName = checkedListBox2.Text;
+                var d = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
+                string  _ModelName = d.Singularize(_TableName);
+
+
+                var config = new TemplateServiceConfiguration();
+                // .. configure your instance
+                config.ReferenceResolver = new MyIReferenceResolver();
+                config.Debug = true;
+                config.EncodedStringFactory = new RawStringFactory();
+                
+                Engine.Razor = RazorEngineService.Create(config);
+               // string templateFile = "C:/mytemplate.cshtml";
+                string parsedtext =
+                    Engine.Razor.RunCompile(textTemplate,_TableName+ File, null, new { Name = _ModelName, TableName = _TableName, TableDefination = data });
+
                 if (location != "")
                 {
-                    string SaveLocation = textBox1.Text + @"\" + p.Parse(location);
+                    string SaveLocation = textBox1.Text + @"\" + Engine.Razor.RunCompile(location,"location", null, new { Name = _ModelName, TableName = _TableName, TableDefination = data });
                     //ShowTextForm f = new ShowTextForm(parsedtext);
                     //f.ShowDialog();
                     System.IO.Directory.CreateDirectory(new FileInfo(SaveLocation).Directory.FullName);
@@ -353,6 +458,42 @@ namespace DDA_Builder
                 }
             }
         }
+
+        string parser(string File,string TableName)
+        {
+            DataTable data = GetDataTableFromDGV(dataGridView1);
+            data.WriteXml(TableName);
+            if (comboBox2.Items.Contains(File))
+            {
+                comboBox2.SelectedItem = File;
+                //Parser p = new Parser(checkedListBox2.Text, data, textTemplate);
+                //string parsedtext = p.Parse();
+
+
+                string _TableName = TableName;
+                var d = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
+                string _ModelName = d.Singularize(_TableName);
+
+
+                var config = new TemplateServiceConfiguration();
+                // .. configure your instance
+                config.ReferenceResolver = new MyIReferenceResolver();
+                config.Debug = true;
+                config.EncodedStringFactory = new RawStringFactory();
+
+                Engine.Razor = RazorEngineService.Create(config);
+                // string templateFile = "C:/mytemplate.cshtml";
+                string parsedtext =
+                    Engine.Razor.RunCompile(textTemplate, _TableName + File, null, new { Name = _ModelName, TableName = _TableName, TableDefination = data });
+
+
+                return parsedtext;
+
+
+            }
+            else return null;
+        }
+
 
         public DataTable GetContentAsDataTable(bool IgnoreHideColumns = false)
         {
@@ -394,17 +535,47 @@ namespace DDA_Builder
                     dt.Columns.Add(column.Name);
                 }
             }
-
+            dt.Columns.Add("RModel");
             object[] cellValues = new object[dgv.Columns.Count];
+            var d = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
+
             foreach (DataGridViewRow row in dgv.Rows)
             {
                 for (int i = 0; i < row.Cells.Count; i++)
                 {
                     cellValues[i] = row.Cells[i].Value;
+
+                    if(cellValues[i] != null && cellValues[i].ToString() == "True")
+                    {
+                        cellValues[i] = "true";
+                    }
                 }
                 dt.Rows.Add(cellValues);
             }
 
+            foreach (DataRow item in dt.Rows)
+            {
+                if(item[1].ToString() == "nvarchar")
+                {
+                    item[1] = "string";
+                }
+                else if (item[1].ToString() == "bit")
+                {
+                    item[1] = "bool";
+                }
+                else if (item[1].ToString() == "timestamp")
+                {
+                    item[1] = "DateTime";
+                }
+
+
+                if(!string.IsNullOrEmpty(item["Rtable"].ToString()) )
+                {
+                    item["RModel"] = d.Singularize(item["Rtable"].ToString());
+                }
+                
+            }
+            dt.TableName = "settings";
             return dt;
         }
 
@@ -423,8 +594,7 @@ namespace DDA_Builder
             return _ModelName;
         }
         private void button6_Click(object sender, EventArgs e)
-        {
-
+        {      
             foreach (int i in checkedListBox1.CheckedIndices)
             {
 
@@ -435,8 +605,14 @@ namespace DDA_Builder
                 if(file == "Add template")
                 {
                    string parse = CreateAddView(location);
-                    Parser p = new Parser(comboBox1.Text, new DataTable(), "");
-                    string SaveLocation = textBox1.Text + @"\" + p.Parse(location);
+                    Parser p = new Parser(checkedListBox2.Text, new DataTable(), "");
+
+                    string _TableName = checkedListBox2.Text;
+                    var d = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
+                    string _ModelName = d.Singularize(_TableName);
+                   string loc =  Engine.Razor.RunCompile(location, _TableName + "Edit", null, new { Name = _ModelName, TableName = _TableName });
+                    
+                    string SaveLocation = textBox1.Text + @"\" + loc;
                     //ShowTextForm f = new ShowTextForm(parsedtext);
                     //f.ShowDialog();
                     System.IO.Directory.CreateDirectory(new FileInfo(SaveLocation).Directory.FullName);
@@ -456,7 +632,6 @@ namespace DDA_Builder
             }
 
         }
-
         private void button7_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog di = new FolderBrowserDialog();
@@ -480,6 +655,108 @@ namespace DDA_Builder
                 }
             }
         }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            DataTable data = GetDataTableFromDGV(dataGridView1);
+            data.WriteXml(checkedListBox2.Text);
+        }
+
+        private void button9_Click(object sender, EventArgs e)
+        {
+            Project.Project_settings settingswindo = new Project.Project_settings();
+            settingswindo.ShowDialog();
+        }
+
+        private void button10_Click(object sender, EventArgs e)
+        {
+            var service = Engine.Razor;
+            // In this example I'm using the default configuration, but you should choose a different template manager: http://antaris.github.io/RazorEngine/TemplateManager.html
+            service.AddTemplate("part", @" my part template");
+            service.AddTemplate("layout", @"<h1>@RenderBody()@Include(""part"")</h1>");
+            service.AddTemplate("template", @"@{Layout = ""layout"";}my template");
+            service.Compile("template");
+            var result = service.Run("template");
+            Console.WriteLine("Result is: {0}", result);
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < checkedListBox2.Items.Count; i++)
+            {
+                checkedListBox2.SetItemChecked(i,true);
+            }
+           
+        }
+
+        private void button12_Click(object sender, EventArgs e)
+        {
+            string Result = "";
+
+                foreach (int i in checkedListBox1.CheckedIndices)
+                {
+                foreach (int d in checkedListBox2.CheckedIndices)
+                {
+                    checkedListBox2.SelectedIndex = d;
+                    string file = checkedListBox1.Items[i].ToString();
+                    //itwmslocations.TryGetValue(file, out location);
+                    Result += parser(file, checkedListBox2.Items[d].ToString());
+                }
+                checkedListBox1.SetItemCheckState(i, CheckState.Unchecked);
+            }
+        
+            ShowTextForm f = new ShowTextForm(Result);
+            f.ShowDialog();
+        }
+
+
+        //private void checkedListBox2_SelectedIndexChanged(object sender, EventArgs e)
+        //{
+        //    dataGridView1.Rows.Clear();
+        //    SqlConnection con = new SqlConnection(Properties.Settings.Default.Connection);
+        //    SqlCommand com = new SqlCommand("SELECT c.name 'Column Name',t.Name 'Data type',c.max_length 'Max Length',c.is_nullable, ISNULL(i.is_primary_key, 0) 'Primary Key' FROM sys.columns c INNER JOIN sys.types t ON c.user_type_id = t.user_type_id LEFT OUTER JOIN sys.index_columns ic ON ic.object_id = c.object_id AND ic.column_id = c.column_id LEFT OUTER JOIN sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id WHERE c.object_id = OBJECT_ID(@tableName)", con);
+        //    com.Parameters.Add("tableName", SqlDbType.Text).Value = checkedListBox2.Text;
+        //    con.Open();
+        //    SqlDataReader r = com.ExecuteReader(CommandBehavior.CloseConnection);
+        //    while (r.Read())
+        //    {
+        //        int row = dataGridView1.Rows.Add();
+        //        dataGridView1[0, row].Value = r[0].ToString();
+        //        dataGridView1[1, row].Value = r[1].ToString();
+        //        dataGridView1[4, row].Value = !Convert.ToBoolean(r[3].ToString());
+        //        dataGridView1[2, row].Value = true;
+
+        //    }
+        //    con.Close();
+        //    DataSet ds = new DataSet();
+        //    try
+        //    {
+        //        ds.ReadXml(checkedListBox2.Text);
+        //        for (int ro = 0; ro < ds.Tables[0].Rows.Count; ro++)
+        //        {
+        //            for (int c = 0; c < ds.Tables[0].Columns.Count; c++)
+        //            {
+        //                if (ds.Tables[0].Columns[c].ColumnName == "DataType" || ds.Tables[0].Columns[c].ColumnName == "RModel")
+        //                    continue;
+        //                dataGridView1.Rows[ro].Cells[ds.Tables[0].Columns[c].ColumnName].Value = ds.Tables[0].Rows[ro][c];
+
+        //            }
+        //            //dataGridView1[] 
+
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        MessageBox.Show(ex.Message);
+        //    }
+
+
+        //}
     }
     }
 
