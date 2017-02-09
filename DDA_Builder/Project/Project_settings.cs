@@ -90,13 +90,14 @@ namespace DDA_Builder.Project
         }
         void Loadtemplates(string TemplatesLocation)
         {
-            string TemplateFolder = AppDomain.CurrentDomain.BaseDirectory.ToString() + @"Text template";
+            string TemplateFolder = TBTemplateFolder.Text;
             DirectoryInfo d = new DirectoryInfo(TemplateFolder);//Assuming Test is your Folder
             FileInfo[] Files = d.GetFiles("*.txt"); //Getting Text files
             string str = "";
             foreach (FileInfo file in Files)
             {
                 bool scape = false;
+                if(Form1.ProjectSettingsds.Tables["Templates"] != null )
                 foreach (DataRow item in Form1.ProjectSettingsds.Tables["Templates"].Rows)
                 {
                     if (file.Name.Trim() == item["TemplateName"].ToString().Trim())

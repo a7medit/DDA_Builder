@@ -24,6 +24,7 @@ namespace DDA_Builder
        public static string DDAProjectLocation = "";
         public static string DDAProjectName = "";
         public static string SaveProjectLocation = "";
+        public static string DDATemplatelocation = "";
         public static  DataSet ProjectSettingsds = new DataSet();
         public Form1()
         {
@@ -51,6 +52,7 @@ namespace DDA_Builder
                 Form1.SaveProjectLocation = ProjectSettingsds.Tables["Settings"].Rows[0]["ProjectLocation"].ToString();
                 Loadtemplates(ProjectSettingsds.Tables["Settings"].Rows[0]["TemplateLocation"].ToString());
                 LoadTables(ProjectSettingsds.Tables["Settings"].Rows[0]["ConnectionString"].ToString());
+                DDATemplatelocation = ProjectSettingsds.Tables["Settings"].Rows[0]["TemplateLocation"].ToString();
 
             }
             catch(FileNotFoundException)
@@ -64,10 +66,8 @@ namespace DDA_Builder
 
         void Loadtemplates(string TemplatesLocation)
         {
-            string TemplateFolder = AppDomain.CurrentDomain.BaseDirectory.ToString() + @"Text template";
-            DirectoryInfo d = new DirectoryInfo(TemplateFolder);//Assuming Test is your Folder
+            DirectoryInfo d = new DirectoryInfo(TemplatesLocation);//Assuming Test is your Folder
             FileInfo[] Files = d.GetFiles("*.txt"); //Getting Text files
-            string str = "";
             foreach (FileInfo file in Files)
             {
                 comboBox2.Items.Add(file.Name);
@@ -395,7 +395,7 @@ namespace DDA_Builder
             if(!string.IsNullOrEmpty(comboBox2.Text))
             {
  
-               textTemplate =  System.IO.File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory.ToString() + @"Text template"+@"\\"+ comboBox2.Text);
+               textTemplate =  System.IO.File.ReadAllText(DDATemplatelocation + @"\\"+ comboBox2.Text);
 
 
             }
@@ -427,11 +427,10 @@ namespace DDA_Builder
             data.WriteXml(checkedListBox2.Text);
             if (comboBox2.Items.Contains(File))
             {
+                string _textTemplate = "";
                 comboBox2.SelectedItem = File ;
-                //Parser p = new Parser(checkedListBox2.Text, data, textTemplate);
-                //string parsedtext = p.Parse();
-
-
+                if (!string.IsNullOrEmpty(comboBox2.Text))
+                    _textTemplate = System.IO.File.ReadAllText(DDATemplatelocation + @"\\" + comboBox2.Text);
                 string _TableName = checkedListBox2.Text;
                 var d = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(CultureInfo.GetCultureInfo("en-us"));
                 string  _ModelName = d.Singularize(_TableName);
@@ -446,7 +445,7 @@ namespace DDA_Builder
                 Engine.Razor = RazorEngineService.Create(config);
                // string templateFile = "C:/mytemplate.cshtml";
                 string parsedtext =
-                    Engine.Razor.RunCompile(textTemplate,_TableName+ File, null, new { Name = _ModelName, TableName = _TableName, TableDefination = data });
+                    Engine.Razor.RunCompile(_textTemplate, _textTemplate, null, new { Name = _ModelName, TableName = _TableName, TableDefination = data });
 
                 if (location != SaveProjectLocation+"\\")
                 {
@@ -491,6 +490,8 @@ namespace DDA_Builder
 
                 Engine.Razor = RazorEngineService.Create(config);
                 // string templateFile = "C:/mytemplate.cshtml";
+                Random rnd = new Random();
+                
                 string parsedtext =
                     Engine.Razor.RunCompile(textTemplate, _TableName + File, null, new { Name = _ModelName, TableName = _TableName, TableDefination = data });
 
@@ -605,7 +606,7 @@ namespace DDA_Builder
         {      
             foreach (int i in checkedListBox1.CheckedIndices)
             {
-
+                
                 string file = checkedListBox1.Items[i].ToString();
                 string location = "";
                 itwmslocations.TryGetValue(file,out location);

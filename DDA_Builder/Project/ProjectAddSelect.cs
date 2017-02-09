@@ -65,5 +65,25 @@ namespace DDA_Builder.Project
             Project_Location = dataGridView1[1, e.RowIndex].Value.ToString();
             this.Close();
         }
+
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if(e.ColumnIndex == 2)
+            {
+                StringCollection Projects = Properties.Settings.Default.ProjectList == null ? new StringCollection() : Properties.Settings.Default.ProjectList;
+                foreach (var item in Projects)
+                {
+                    if(item == dataGridView1[0, e.RowIndex].Value.ToString() + "&" + dataGridView1[1, e.RowIndex].Value.ToString())
+                    {
+                        Projects.Remove(item);
+                        break;
+                    }
+                }
+
+                Properties.Settings.Default.ProjectList = Projects;
+                Properties.Settings.Default.Save();
+                dataGridView1.Rows.RemoveAt(e.RowIndex);
+            }
+        }
     }
 }

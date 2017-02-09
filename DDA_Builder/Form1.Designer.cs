@@ -149,6 +149,7 @@
             this.button1.TabIndex = 3;
             this.button1.Text = "Add/Edit View";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Visible = false;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // button2
@@ -160,6 +161,7 @@
             this.button2.TabIndex = 4;
             this.button2.Text = "View Model";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Visible = false;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // button3
@@ -171,6 +173,7 @@
             this.button3.TabIndex = 5;
             this.button3.Text = "Angularjs controller";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Visible = false;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // button4
@@ -182,6 +185,7 @@
             this.button4.TabIndex = 6;
             this.button4.Text = "List View";
             this.button4.UseVisualStyleBackColor = true;
+            this.button4.Visible = false;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
             // comboBox2
@@ -211,6 +215,7 @@
             this.button5.TabIndex = 9;
             this.button5.Text = "Template Parse";
             this.button5.UseVisualStyleBackColor = true;
+            this.button5.Visible = false;
             this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // button6
@@ -272,6 +277,7 @@
             this.button8.TabIndex = 15;
             this.button8.Text = "Save settings";
             this.button8.UseVisualStyleBackColor = true;
+            this.button8.Visible = false;
             this.button8.Click += new System.EventHandler(this.button8_Click);
             // 
             // checkedListBox2
@@ -305,6 +311,7 @@
             this.button10.TabIndex = 18;
             this.button10.Text = "Test";
             this.button10.UseVisualStyleBackColor = true;
+            this.button10.Visible = false;
             this.button10.Click += new System.EventHandler(this.button10_Click);
             // 
             // button11
