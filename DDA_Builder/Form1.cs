@@ -23,7 +23,8 @@ namespace DDA_Builder
     {
        public static string DDAProjectLocation = "";
         public static string DDAProjectName = "";
-      public static  DataSet ProjectSettingsds = new DataSet();
+        public static string SaveProjectLocation = "";
+        public static  DataSet ProjectSettingsds = new DataSet();
         public Form1()
         {
             InitializeComponent();
@@ -47,6 +48,7 @@ namespace DDA_Builder
             try
             {
                 ProjectSettingsds.ReadXml(DDAProjectLocation + "\\" + "settings");
+                Form1.SaveProjectLocation = ProjectSettingsds.Tables["Settings"].Rows[0]["ProjectLocation"].ToString();
                 Loadtemplates(ProjectSettingsds.Tables["Settings"].Rows[0]["TemplateLocation"].ToString());
                 LoadTables(ProjectSettingsds.Tables["Settings"].Rows[0]["ConnectionString"].ToString());
 
@@ -73,14 +75,15 @@ namespace DDA_Builder
 
             foreach (DataRow item in Form1.ProjectSettingsds.Tables["Templates"].Rows)
             {
-                itwmslocations.Add(item["TemplateName"].ToString(), item["TemplatLocation"].ToString());
+                itwmslocations.Add(item["TemplateName"].ToString(), SaveProjectLocation+"\\"+ item["TemplatLocation"].ToString());
 
             }
+            itwmslocations.Add("Add template", SaveProjectLocation + "\\" + @"CRMP.Web\Views\@Model.Name\AddForm.cshtml");
             foreach (var item in itwmslocations)
             {
                 int i = checkedListBox1.Items.Add(item.Key);
             }
-
+   
         }
 
         void LoadTables(string connectionString)
@@ -200,7 +203,7 @@ namespace DDA_Builder
 }";
             Class += @"
     <h3>
-        " + Modelname + @" Edit
+        {{ 'General." + Modelname + @"' | translate }} {{ 'General.Edit' | translate }}
       </h3> ";
             if (hastabs)
             {
@@ -265,10 +268,15 @@ namespace DDA_Builder
                     }
                     else
                         item += @" <div class=""form-group col-sm-6"" " + (datarowdata.Cells[1].Value.ToString() == "datetime" ? " ng-controller='DatepickerDemoCtrl as dpick' " : "") + "> " + System.Environment.NewLine;
-                    item += " <label>" + datarowdata.Cells[0].Value.ToString() + ":</label> " +
+                      if ((datarowdata.Cells[6].Value != null) && (!string.IsNullOrEmpty(datarowdata.Cells[6].Value.ToString()) || !string.IsNullOrEmpty(datarowdata.Cells[7].Value.ToString())))
+                        item += " <label>{{'" + datarowdata.Cells[6].Value + "."+ datarowdata.Cells[7].Value + "' | translate }}:</label> " +
                              System.Environment.NewLine;
+                        else
+                        item += " <label>{{'" + checkedListBox2.Text + "." + datarowdata.Cells[0].Value.ToString() + "' | translate }}:</label> " +
+     System.Environment.NewLine;
 
-                    if(datarowdata.Cells[1].Value.ToString() == "datetime" )
+
+                    if (datarowdata.Cells[1].Value.ToString() == "datetime" )
                     {
                         item += @"<p class='input-group'>
                                               <input   name='" + datarowdata.Cells[0].Value.ToString() + "' id='" + datarowdata.Cells[0].Value.ToString() + "' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
@@ -290,7 +298,7 @@ namespace DDA_Builder
                                 +"</label>"
                             +"</div>" + System.Environment.NewLine;
                     }
-                    else if ((datarowdata.Cells[6].Value != null || datarowdata.Cells[7].Value != null) && (!string.IsNullOrEmpty(datarowdata.Cells[6].Value.ToString()) || !string.IsNullOrEmpty(datarowdata.Cells[7].Value.ToString())))
+                    else if ((datarowdata.Cells[6].Value != null && datarowdata.Cells[7].Value != null) && (!string.IsNullOrEmpty(datarowdata.Cells[6].Value.ToString()) || !string.IsNullOrEmpty(datarowdata.Cells[7].Value.ToString())))
                     {
                         item += " <select class='form-control' name='" + datarowdata.Cells[0].Value.ToString() + "' id='" + datarowdata.Cells[0].Value.ToString() + "' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
          "' " + ((datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True") ? "required" : "") + "     " + ((datarowdata.Cells[5].Value != null && datarowdata.Cells[5].Value.ToString().Trim() != "") ? "maxlength=" + datarowdata.Cells[5].Value.ToString().Trim() + "  " : "") + @"  ng-options=""i." + ModelName(datarowdata.Cells[8].Value.ToString().Trim()) + @" as (i." + ModelName(datarowdata.Cells[7].Value.ToString().Trim()) + @") for i in " + datarowdata.Cells[6].Value.ToString().Trim() + @"GroupList""  ><option></option> </select>" + System.Environment.NewLine;
@@ -299,7 +307,7 @@ namespace DDA_Builder
                     {
 
                         string[] options = datarowdata.Cells[7].Value.ToString().Replace('{', ' ').Replace('}', ' ').Split(',');
-                        string[] optionsValue = datarowdata.Cells[8].Value != null?datarowdata.Cells[8].Value.ToString().Replace('{', ' ').Replace('}', ' ').Split(','): new string[0];
+                        string[] optionsValue = datarowdata.Cells[8].Value != null && !string.IsNullOrEmpty(datarowdata.Cells[8].Value.ToString()) ? datarowdata.Cells[8].Value.ToString().Replace('{', ' ').Replace('}', ' ').Split(','): new string[0];
                         item += " <select class='form-control' name='" + datarowdata.Cells[0].Value.ToString() + "' id='" + datarowdata.Cells[0].Value.ToString() + "' ng-model='current" + Modelname + "." + datarowdata.Cells[0].Value.ToString() +
          "' " + ((datarowdata.Cells[4].Value != null && datarowdata.Cells[4].Value.ToString() == "True") ? "required" : "") + "     " + ((datarowdata.Cells[5].Value != null && datarowdata.Cells[5].Value.ToString().Trim() != "") ? "maxlength=" + datarowdata.Cells[5].Value.ToString().Trim() + "  " : "") + @"
                 >" + System.Environment.NewLine;
@@ -359,8 +367,8 @@ namespace DDA_Builder
                 Class += "</div>";
             Class += "</form>";
             Class += "</div>";                                                                             
-            Class += "    <button type='button' class='btn btn-primary' ng-click='save" + Modelname + "()' ng-disabled='" + Modelname + @"Form.$invalid'>Add " + Modelname + "</button>";
-            Class += @"   <button type = 'button' class='btn btn-primary' ng-click=""$state.go('app."+ checkedListBox2.Text + @"List','');"" ng-disabled='CarForm.$invalid'><i class=""fa fa-times"" /> Cancel</button>";
+            Class += "    <button type='button' class='btn btn-primary' ng-click='save" + Modelname + "()' ng-disabled='" + Modelname + @"Form.$invalid'> {{ 'General.Add' | translate }}" + "</button>";
+            Class += @"   <button type = 'button' class='btn btn-primary' ng-click=""$state.go('app."+ checkedListBox2.Text + @"List','');"" ng-disabled='CarForm.$invalid'><i class=""fa fa-times"" />{{ 'General.Cancel' | translate }}</button>";
 
         
 
@@ -440,9 +448,9 @@ namespace DDA_Builder
                 string parsedtext =
                     Engine.Razor.RunCompile(textTemplate,_TableName+ File, null, new { Name = _ModelName, TableName = _TableName, TableDefination = data });
 
-                if (location != "")
+                if (location != SaveProjectLocation+"\\")
                 {
-                    string SaveLocation = textBox1.Text + @"\" + Engine.Razor.RunCompile(location,"location", null, new { Name = _ModelName, TableName = _TableName, TableDefination = data });
+                    string SaveLocation = Engine.Razor.RunCompile(location,"location", null, new { Name = _ModelName, TableName = _TableName, TableDefination = data });
                     //ShowTextForm f = new ShowTextForm(parsedtext);
                     //f.ShowDialog();
                     System.IO.Directory.CreateDirectory(new FileInfo(SaveLocation).Directory.FullName);
@@ -612,13 +620,12 @@ namespace DDA_Builder
                     string _ModelName = d.Singularize(_TableName);
                    string loc =  Engine.Razor.RunCompile(location, _TableName + "Edit", null, new { Name = _ModelName, TableName = _TableName });
                     
-                    string SaveLocation = textBox1.Text + @"\" + loc;
                     //ShowTextForm f = new ShowTextForm(parsedtext);
                     //f.ShowDialog();
-                    System.IO.Directory.CreateDirectory(new FileInfo(SaveLocation).Directory.FullName);
+                    System.IO.Directory.CreateDirectory(new FileInfo(loc).Directory.FullName);
 
 
-                    System.IO.File.WriteAllText(SaveLocation, parse, System.Text.Encoding.UTF8);
+                    System.IO.File.WriteAllText(loc, parse, System.Text.Encoding.UTF8);
                 }
                 else
                 parserWithcreateFile(file, location);
@@ -689,9 +696,13 @@ namespace DDA_Builder
         {
             for (int i = 0; i < checkedListBox2.Items.Count; i++)
             {
-                checkedListBox2.SetItemChecked(i,true);
+                
+                checkedListBox2.SetItemChecked(i, checkedListBox2.GetItemCheckState(i) != CheckState.Checked);
             }
-           
+            if (button11.Text == "Select All")
+                button11.Text = "Deselect All";
+            else
+                button11.Text = "Select All";
         }
 
         private void button12_Click(object sender, EventArgs e)

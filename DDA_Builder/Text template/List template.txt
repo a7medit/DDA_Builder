@@ -69,11 +69,11 @@ if (@item["include"] == "true")
     {
 	if (!String.IsNullOrEmpty(item["Rtable"].ToString()) )
 	{
-	 <th>@(item["Rtable"]+" "+item["Displaycolumn"])</th>
+	 @("<th>{{ '"+item["Rtable"]+"."+item["Displaycolumn"]+"' | translate }}</th>")
 	}
 	else
 	{
-       <th>@item["Field"]</th>
+       	 @("<th>{{ '"+Model.TableName+"."+item["Field"]+"' | translate }}</th>")
 	   }
     }
 } 					
@@ -135,7 +135,7 @@ if (@item["include"] == "true")
             </td>
         </tr>
         <tr ng-show="@(Model.TableName+"List.length") == 0">
-            <td colspan="4">Ingen data </td>
+            <td colspan="4">{{ 'General.No_data' | translate  }} </td>
         </tr>
     </tbody>
 </table>
@@ -147,8 +147,8 @@ if (@item["include"] == "true")
 
 <br/>
 
-<a ng-click="showAdd@(Model.Name+"F")orm(true)" class="btn btn-primary">Add</a>
+<a ng-click="showAdd@(Model.Name+"F")orm(true)" class="btn btn-primary">{{ 'General.Add' | translate  }}</a>
     <button ng-click="delete@(Model.TableName+"();") " ng-show="ItemsToDelete" class="btn btn-labeled btn-danger">
-        <span class="btn-label"><i class="fa fa-times"></i></span> Delete selected
+        <span class="btn-label"><i class="fa fa-times"></i></span> {{ 'General.DeleteSelected' | translate  }}
     </button>
 </div>
