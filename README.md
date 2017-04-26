@@ -40,5 +40,12 @@ and your own database (SQL server only for now).
 </table>
   ```
 
+
+
+<h3>things to do: </h3>
+<ul>
+  <li>Razor exception handling</li>
+  <li>Template Edit/Add</li>
+</ul>
   
 
