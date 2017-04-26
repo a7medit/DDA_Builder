@@ -9,5 +9,6 @@ and your own database (SQL server only for now).
 
 <h3>how it works:</h3>
 
+<img src="https://s22.postimg.org/apms2vi1d/code_generator_diagram.jpg" alt="Smiley face" >
 
 </article>
