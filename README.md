@@ -17,12 +17,27 @@ and your own database (SQL server only for now).
 
 1 :Create a Razor template : 
   
-  example Razor template for generating an HTML table
+  example Razor template for generating an HTML table from your data model
   
-```
+```razor
   <table>
-  
-  </table>
+  <thead>
+  <tr>
+  @foreach (var item in @Model.TableDefination.Rows)
+{
+<th> @(item["Field"]) </th>
+}
+</tr>
+</thead>
+<tbody>
+<tr>
+  @foreach (var item in @Model.TableDefination.Rows)
+{
+<td> </td>
+}
+</tr>
+</tbody>
+</table>
   ```
 
   
