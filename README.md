@@ -20,19 +20,19 @@ and your own database (SQL server only for now).
   example Razor template for generating an HTML table from your data model
   
 ```razor
-  <table>
-  <thead>
-  <tr>
-  @foreach (var item in @Model.TableDefination.Rows)
-{
-<th> @(item["Field"]) </th>
-}
+<table>
+<thead>
+<tr>
+ @foreach (var item in @Model.TableDefination.Rows)
+ {
+ <th> @(item["Field"]) </th>
+ }
 </tr>
 </thead>
 <tbody>
 <tr>
-  @foreach (var item in @Model.TableDefination.Rows)
-{
+ @foreach (var item in @Model.TableDefination.Rows)
+  {
 <td> </td>
 }
 </tr>
